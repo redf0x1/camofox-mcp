@@ -51,38 +51,75 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 ## Quick Start
 
-### Prerequisites
+### 1. Install CamoFox Browser
 
-1. Install and run [CamoFox Browser](https://github.com/jo-inc/camofox-browser):
-   ```bash
-   # Follow CamoFox installation guide
-   # CamoFox must be running on port 9377 (default)
-   ```
+Download from [CamoFox releases](https://github.com/jo-inc/camofox-browser/releases) and start:
 
-### VS Code / Cursor / Claude Desktop
+```bash
+./camofox-browser   # Starts on port 9377
+```
 
-Add to your MCP configuration:
+### 2. Configure MCP Client
+
+#### VS Code / Cursor (Recommended)
+
+Add to your MCP settings (`settings.json` or `.vscode/mcp.json`):
 
 ```json
 {
-  "camofox": {
-    "command": "node",
-    "args": ["/path/to/camofox-mcp/dist/index.js"],
-    "env": {
-      "CAMOFOX_URL": "http://localhost:9377"
-    },
-    "type": "stdio"
+  "servers": {
+    "camofox": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "camofox-mcp@latest"],
+      "env": {
+        "CAMOFOX_URL": "http://localhost:9377"
+      }
+    }
   }
 }
 ```
 
-### From Source
+#### Claude Desktop
+
+Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "camofox": {
+      "command": "npx",
+      "args": ["-y", "camofox-mcp@latest"],
+      "env": {
+        "CAMOFOX_URL": "http://localhost:9377"
+      }
+    }
+  }
+}
+```
+
+#### From Source (Development)
 
 ```bash
 git clone https://github.com/redf0x1/camofox-mcp.git
 cd camofox-mcp
-npm install
-npm run build
+npm install && npm run build
+```
+
+Then configure:
+```json
+{
+  "servers": {
+    "camofox": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/camofox-mcp/dist/index.js"],
+      "env": {
+        "CAMOFOX_URL": "http://localhost:9377"
+      }
+    }
+  }
+}
 ```
 
 ## Tools (18)
