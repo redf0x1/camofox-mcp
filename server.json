@@ -1,0 +1,65 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "camofox-mcp",
+  "description": "Anti-detection browser automation MCP server. 18 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "repository": {
+    "url": "https://github.com/redf0x1/camofox-mcp",
+    "source": "github"
+  },
+  "version_detail": {
+    "version": "1.0.0",
+    "release_date": "2026-02-13",
+    "is_stable": true
+  },
+  "packages": [
+    {
+      "registry_name": "npm",
+      "name": "camofox-mcp",
+      "version": "1.0.0",
+      "runtime": "node",
+      "runtime_arguments": [],
+      "package_arguments": [],
+      "environment_variables": [
+        {
+          "name": "CAMOFOX_URL",
+          "description": "CamoFox server URL",
+          "required": false,
+          "default": "http://localhost:9377"
+        },
+        {
+          "name": "CAMOFOX_TIMEOUT",
+          "description": "Request timeout in ms",
+          "required": false,
+          "default": "30000"
+        },
+        {
+          "name": "CAMOFOX_API_KEY",
+          "description": "Optional API key for authentication",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {"name": "camofox_server_status", "description": "Check CamoFox server health and browser connection"},
+    {"name": "camofox_create_tab", "description": "Create a new browser tab with anti-detection fingerprinting"},
+    {"name": "camofox_close_tab", "description": "Close a browser tab and release resources"},
+    {"name": "camofox_list_tabs", "description": "List all open browser tabs with URLs and titles"},
+    {"name": "camofox_navigate", "description": "Navigate a tab to a URL"},
+    {"name": "camofox_go_back", "description": "Navigate backward in browser history"},
+    {"name": "camofox_go_forward", "description": "Navigate forward in browser history"},
+    {"name": "camofox_refresh", "description": "Reload the current page"},
+    {"name": "camofox_click", "description": "Click an element by ref or CSS selector"},
+    {"name": "camofox_type_text", "description": "Type text into an input field by ref or CSS selector"},
+    {"name": "camofox_press_key", "description": "Press a keyboard key"},
+    {"name": "camofox_scroll", "description": "Scroll page up or down"},
+    {"name": "camofox_snapshot", "description": "Get accessibility tree snapshot of page content"},
+    {"name": "camofox_screenshot", "description": "Take visual screenshot as base64 PNG"},
+    {"name": "camofox_get_links", "description": "Get all hyperlinks on page"},
+    {"name": "camofox_web_search", "description": "Search the web via 14 engines"},
+    {"name": "camofox_get_stats", "description": "Get session statistics and performance metrics"},
+    {"name": "camofox_import_cookies", "description": "Import cookies for authenticated sessions"}
+  ],
+  "categories": ["browser-automation", "web-scraping"],
+  "tags": ["anti-detection", "stealth", "fingerprint", "camoufox", "playwright-alternative"]
+}
