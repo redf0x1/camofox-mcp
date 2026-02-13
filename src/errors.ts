@@ -80,3 +80,21 @@ export function toErrorResult(error: unknown): ToolResult {
     content: [{ type: "text", text: JSON.stringify(payload) }]
   };
 }
+
+export function batchResult(results: Array<{ index: number; success: boolean; error?: string }>, total: number): ToolResult {
+  const succeeded = results.filter((result) => result.success).length;
+  const hasErrors = succeeded < total;
+
+  return {
+    content: [{
+      type: "text",
+      text: JSON.stringify({
+        success: !hasErrors,
+        completed: succeeded,
+        total,
+        results
+      }, null, 2)
+    }],
+    isError: hasErrors
+  };
+}

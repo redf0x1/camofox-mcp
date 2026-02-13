@@ -40,7 +40,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 22 | 1 | 33 |
+| Tools | 27 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -122,7 +122,7 @@ Then configure:
 }
 ```
 
-## Tools (22)
+## Tools (27)
 
 ### Tab Management
 | Tool | Description |
@@ -146,6 +146,15 @@ Then configure:
 | `type_text` | Type text into input fields by ref or CSS selector |
 | `press_key` | Press keyboard keys (Enter, Tab, Escape, etc.) |
 | `scroll` | Scroll page up or down by pixel amount |
+
+### Batch / Composite
+| Tool | Description |
+|------|-------------|
+| `fill_form` | Fill multiple form fields in one call, with optional submit click |
+| `type_and_submit` | Type into a field and press a key (default: Enter) |
+| `navigate_and_snapshot` | Navigate to a URL, wait for readiness, and return a snapshot |
+| `scroll_and_snapshot` | Scroll then capture a fresh snapshot |
+| `batch_click` | Click multiple elements sequentially with per-click results |
 
 ### Observation
 | Tool | Description |

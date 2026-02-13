@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { CamofoxClient } from "./client.js";
 import type { Config } from "./types.js";
+import { registerBatchTools } from "./tools/batch.js";
 import { registerHealthTools } from "./tools/health.js";
 import { registerInteractionTools, registerPressKeyTool } from "./tools/interaction.js";
 import { registerNavigationTools } from "./tools/navigation.js";
@@ -33,6 +34,7 @@ export function createServer(config: Config): { server: McpServer; client: Camof
   registerObservationTools(server, deps);
   registerSearchTools(server, deps);
   registerSessionTools(server, deps);
+  registerBatchTools(server, deps);
 
   return { server, client };
 }
