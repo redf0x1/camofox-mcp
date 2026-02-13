@@ -31,6 +31,14 @@ export function getAllTrackedTabs(): TabInfo[] {
   return Array.from(tabs.values());
 }
 
+export function clearTrackedTabsByUserId(userId: string): void {
+  for (const [tabId, tracked] of tabs.entries()) {
+    if (tracked.userId === userId) {
+      tabs.delete(tabId);
+    }
+  }
+}
+
 export function incrementToolCall(tabId: string): void {
   const tab = getTrackedTab(tabId);
   tab.toolCalls += 1;

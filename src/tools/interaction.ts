@@ -99,6 +99,68 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
       }
     }
   );
+
+  server.tool(
+    "camofox_hover",
+    "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector.",
+    {
+      tab_id: z.string().describe("Tab ID"),
+      ref: z.string().optional().describe("Element ref from snapshot (e.g. 'e5')"),
+      selector: z.string().optional().describe("CSS selector (e.g. '#menu-item', '.dropdown-trigger')")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tab_id: z.string().describe("Tab ID"),
+            ref: z.string().optional().describe("Element ref from snapshot (e.g. 'e5')"),
+            selector: z.string().optional().describe("CSS selector (e.g. '#menu-item', '.dropdown-trigger')")
+          })
+          .refine((data) => Boolean(data.ref || data.selector), {
+            message: "Error: provide either ref or selector"
+          })
+          .parse(input);
+        const tracked = getTrackedTab(parsed.tab_id);
+        await deps.client.hover(parsed.tab_id, { ref: parsed.ref, selector: parsed.selector }, tracked.userId);
+        incrementToolCall(parsed.tab_id);
+        return okResult({
+          message: `Hovered on ${parsed.ref ? `ref=${parsed.ref}` : `selector=${parsed.selector}`}`
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
+
+  server.tool(
+    "camofox_wait_for",
+    "Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes.",
+    {
+      tab_id: z.string().describe("Tab ID"),
+      timeout: z.number().optional().describe("Timeout in ms (default: 10000)"),
+      wait_for_network: z.boolean().optional().describe("Wait for network idle (default: true)")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tab_id: z.string().describe("Tab ID"),
+            timeout: z.number().optional().describe("Timeout in ms (default: 10000)"),
+            wait_for_network: z.boolean().optional().describe("Wait for network idle (default: true)")
+          })
+          .parse(input);
+        const tracked = getTrackedTab(parsed.tab_id);
+        const result = await deps.client.waitForReady(parsed.tab_id, tracked.userId, parsed.timeout, parsed.wait_for_network);
+        incrementToolCall(parsed.tab_id);
+        return okResult({
+          message: result.ready ? "Page is ready" : "Page wait timed out",
+          ready: result.ready
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
 }
 
 export function registerPressKeyTool(server: McpServer, deps: ToolDeps): void {

@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { AppError, okResult, toErrorResult } from "../errors.js";
-import { getTrackedTab, incrementToolCall } from "../state.js";
+import { clearTrackedTabsByUserId, getTrackedTab, incrementToolCall } from "../state.js";
 import type { ToolDeps } from "../server.js";
 
 export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
@@ -48,6 +48,31 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           refsCount: tracked.refsCount,
           sessionKey: tracked.sessionKey,
           remote: remoteStats
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
+
+  server.tool(
+    "camofox_close_session",
+    "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.",
+    {
+      tab_id: z.string().describe("Any tab ID from the session to identify the user")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tab_id: z.string().describe("Any tab ID from the session to identify the user")
+          })
+          .parse(input);
+        const tracked = getTrackedTab(parsed.tab_id);
+        await deps.client.closeSession(tracked.userId);
+        clearTrackedTabsByUserId(tracked.userId);
+        return okResult({
+          message: `Session closed. All tabs for user ${tracked.userId} have been released.`
         });
       } catch (error) {
         return toErrorResult(error);

@@ -69,4 +69,31 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
       }
     }
   );
+
+  server.tool(
+    "camofox_wait_for_text",
+    "Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading.",
+    {
+      tab_id: z.string().describe("Tab ID"),
+      text: z.string().describe("Text to wait for"),
+      timeout: z.number().optional().describe("Timeout in ms (default: 10000)")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tab_id: z.string().describe("Tab ID"),
+            text: z.string().describe("Text to wait for"),
+            timeout: z.number().optional().describe("Timeout in ms (default: 10000)")
+          })
+          .parse(input);
+        const tracked = getTrackedTab(parsed.tab_id);
+        await deps.client.waitForText(parsed.tab_id, tracked.userId, parsed.text, parsed.timeout);
+        incrementToolCall(parsed.tab_id);
+        return okResult({ message: `Text \"${parsed.text}\" found on page` });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
 }

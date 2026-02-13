@@ -141,6 +141,49 @@ export class CamofoxClient {
     });
   }
 
+  async waitForReady(tabId: string, userId: string, timeout?: number, waitForNetwork?: boolean): Promise<{ ready: boolean }> {
+    return this.requestJson<{ ready: boolean }>(`/tabs/${encodeURIComponent(tabId)}/wait`, {
+      method: "POST",
+      body: JSON.stringify({
+        userId,
+        timeout: timeout ?? 10000,
+        waitForNetwork: waitForNetwork ?? true
+      })
+    });
+  }
+
+  async hover(tabId: string, params: { ref?: string; selector?: string }, userId: string): Promise<void> {
+    await this.requestJson("/act", {
+      method: "POST",
+      body: JSON.stringify({
+        kind: "hover",
+        targetId: tabId,
+        userId,
+        ...(params.ref ? { ref: params.ref } : {}),
+        ...(params.selector ? { selector: params.selector } : {})
+      })
+    });
+  }
+
+  async waitForText(tabId: string, userId: string, text: string, timeoutMs?: number): Promise<void> {
+    await this.requestJson("/act", {
+      method: "POST",
+      body: JSON.stringify({
+        kind: "wait",
+        targetId: tabId,
+        userId,
+        text,
+        ...(timeoutMs ? { timeMs: timeoutMs } : {})
+      })
+    });
+  }
+
+  async closeSession(userId: string): Promise<void> {
+    await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}`, {
+      method: "DELETE"
+    });
+  }
+
   async snapshot(tabId: string, userId: string): Promise<SnapshotResponse> {
     const response = await this.requestJson<Record<string, unknown>>(
       `/tabs/${encodeURIComponent(tabId)}/snapshot?userId=${encodeURIComponent(userId)}`,

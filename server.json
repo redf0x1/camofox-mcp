@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 18 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 22 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
@@ -53,10 +53,14 @@
     {"name": "camofox_type_text", "description": "Type text into an input field by ref or CSS selector"},
     {"name": "camofox_press_key", "description": "Press a keyboard key"},
     {"name": "camofox_scroll", "description": "Scroll page up or down"},
+    {"name": "camofox_hover", "description": "Hover over an element by ref or CSS selector"},
+    {"name": "camofox_wait_for", "description": "Wait for page readiness after navigation or dynamic updates"},
     {"name": "camofox_snapshot", "description": "Get accessibility tree snapshot of page content"},
     {"name": "camofox_screenshot", "description": "Take visual screenshot as base64 PNG"},
     {"name": "camofox_get_links", "description": "Get all hyperlinks on page"},
+    {"name": "camofox_wait_for_text", "description": "Wait for specific text to appear on the page"},
     {"name": "camofox_web_search", "description": "Search the web via 14 engines"},
+    {"name": "camofox_close_session", "description": "Close all browser tabs for a user session"},
     {"name": "camofox_get_stats", "description": "Get session statistics and performance metrics"},
     {"name": "camofox_import_cookies", "description": "Import cookies for authenticated sessions"}
   ],
