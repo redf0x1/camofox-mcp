@@ -1,0 +1,64 @@
+{
+  "name": "camofox-mcp",
+  "version": "1.0.0",
+  "description": "Anti-detection browser MCP server for AI agents — navigate, interact, and automate the web without getting blocked",
+  "main": "dist/index.js",
+  "bin": {
+    "camofox-mcp": "dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "camofox",
+    "camoufox",
+    "anti-detection",
+    "browser-automation",
+    "ai-agent",
+    "web-scraping",
+    "fingerprint",
+    "bot-detection",
+    "playwright-alternative",
+    "browser",
+    "automation",
+    "stealth",
+    "headless-browser",
+    "claude",
+    "cursor",
+    "vscode",
+    "llm-tools"
+  ],
+  "author": "redf0x1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redf0x1/camofox-mcp"
+  },
+  "homepage": "https://github.com/redf0x1/camofox-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/redf0x1/camofox-mcp/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.26.0",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.0.0",
+    "@types/node": "^22.0.0"
+  }
+}
