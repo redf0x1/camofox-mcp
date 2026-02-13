@@ -2,7 +2,8 @@
 
 **The anti-detection browser MCP server for AI agents.** Navigate, interact, and automate the web without getting blocked.
 
-[![npm version](https://img.shields.io/npm/v/camofox-mcp.svg)](https://www.npmjs.com/package/camofox-mcp)
+[![CI](https://github.com/redf0x1/camofox-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/redf0x1/camofox-mcp/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/camofox-mcp)](https://www.npmjs.com/package/camofox-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
