@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { createRequire } from "node:module";
 
 import { CamofoxClient } from "./client.js";
 import type { Config } from "./types.js";
@@ -11,6 +12,9 @@ import { registerSearchTools } from "./tools/search.js";
 import { registerSessionTools } from "./tools/session.js";
 import { registerTabsTools } from "./tools/tabs.js";
 
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
+
 export interface ToolDeps {
   client: CamofoxClient;
   config: Config;
@@ -21,7 +25,7 @@ export function createServer(config: Config): { server: McpServer; client: Camof
 
   const server = new McpServer({
     name: "camofox-mcp",
-    version: "1.0.0"
+    version: pkg.version
   });
 
   const deps: ToolDeps = { client, config };

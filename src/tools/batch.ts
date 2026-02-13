@@ -71,7 +71,6 @@ export function registerBatchTools(server: McpServer, deps: ToolDeps): void {
           } catch (error) {
             const appError = normalizeError(error);
             results.push({ index, ref: field.ref, selector: field.selector, success: false, error: appError.message });
-            incrementToolCall(parsed.tabId);
             return jsonResult(
               {
                 success: false,
