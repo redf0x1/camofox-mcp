@@ -7,7 +7,7 @@
     "source": "github"
   },
   "version_detail": {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "release_date": "2026-02-13",
     "is_stable": true
   },
@@ -15,7 +15,7 @@
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
