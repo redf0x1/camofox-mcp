@@ -166,16 +166,27 @@ export class CamofoxClient {
   }
 
   async waitForText(tabId: string, userId: string, text: string, timeoutMs?: number): Promise<void> {
-    await this.requestJson("/act", {
-      method: "POST",
-      body: JSON.stringify({
-        kind: "wait",
-        targetId: tabId,
-        userId,
-        text,
-        ...(timeoutMs ? { timeMs: timeoutMs } : {})
-      })
-    });
+    const timeout = timeoutMs ?? 10000;
+    const pollInterval = 500;
+    const startedAt = Date.now();
+    const targetText = text.toLowerCase();
+
+    while (Date.now() - startedAt < timeout) {
+      try {
+        const snapshot = await this.snapshot(tabId, userId);
+        if (snapshot.snapshot.toLowerCase().includes(targetText)) {
+          return;
+        }
+      } catch {
+        // Continue polling until timeout
+      }
+
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, pollInterval);
+      });
+    }
+
+    throw new AppError("TIMEOUT", `Text \"${text}\" not found within ${timeout}ms`);
   }
 
   async closeSession(userId: string): Promise<void> {
