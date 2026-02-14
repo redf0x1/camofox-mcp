@@ -184,6 +184,10 @@ Then configure:
 | `CAMOFOX_URL` | `http://localhost:9377` | CamoFox server URL |
 | `CAMOFOX_TIMEOUT` | `30000` | Request timeout in ms |
 | `CAMOFOX_API_KEY` | — | API key (if CamoFox requires auth) |
+| `CAMOFOX_TAB_TTL_MS` | `1800000` | Tab TTL in milliseconds (30min). Set to 0 to disable auto-eviction |
+| `CAMOFOX_MAX_TABS` | `100` | Maximum tracked tabs |
+| `CAMOFOX_VISITED_URLS_LIMIT` | `50` | Max URLs to keep in tab history |
+| `CAMOFOX_SWEEP_INTERVAL_MS` | `60000` | Sweep interval in milliseconds (1min) |
 
 ## Architecture
 
