@@ -63,6 +63,7 @@ export interface TabInfo {
   tabId: string;
   url: string;
   createdAt: string;
+  lastActivity: number;
   userId: string;
   sessionKey: string;
   visitedUrls: string[];

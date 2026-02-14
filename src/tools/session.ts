@@ -69,8 +69,11 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           })
           .parse(input);
         const tracked = getTrackedTab(parsed.tab_id);
-        await deps.client.closeSession(tracked.userId);
-        clearTrackedTabsByUserId(tracked.userId);
+        try {
+          await deps.client.closeSession(tracked.userId);
+        } finally {
+          clearTrackedTabsByUserId(tracked.userId);
+        }
         return okResult({
           message: `Session closed. All tabs for user ${tracked.userId} have been released.`
         });

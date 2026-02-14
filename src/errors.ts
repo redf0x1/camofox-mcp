@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 export type ErrorCode =
   | "CONNECTION_REFUSED"
   | "TAB_NOT_FOUND"
+  | "MAX_TABS_EXCEEDED"
   | "ELEMENT_NOT_FOUND"
   | "NAVIGATION_FAILED"
   | "API_KEY_REQUIRED"

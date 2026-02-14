@@ -1,10 +1,22 @@
 import { AppError } from "./errors.js";
 import type { TabInfo } from "./types.js";
 
+const TAB_TTL_MS = parseInt(process.env.CAMOFOX_TAB_TTL_MS || '1800000', 10);    // 30min default
+const MAX_TABS = parseInt(process.env.CAMOFOX_MAX_TABS || '100', 10);             // 100 tabs max
+const VISITED_URLS_LIMIT = parseInt(process.env.CAMOFOX_VISITED_URLS_LIMIT || '50', 10); // 50 URLs max
+const SWEEP_INTERVAL_MS = parseInt(process.env.CAMOFOX_SWEEP_INTERVAL_MS || '60000', 10); // 1min sweep
+
 const tabs = new Map<string, TabInfo>();
 
 export function trackTab(tab: TabInfo): void {
-  tabs.set(tab.tabId, tab);
+  if (tabs.size >= MAX_TABS) {
+    throw new AppError(
+      "MAX_TABS_EXCEEDED",
+      `Maximum tracked tabs exceeded (${MAX_TABS}). Close existing tabs or increase CAMOFOX_MAX_TABS.`
+    );
+  }
+
+  tabs.set(tab.tabId, { ...tab, lastActivity: Date.now() });
 }
 
 export function removeTrackedTab(tabId: string): void {
@@ -16,6 +28,7 @@ export function getTrackedTab(tabId: string): TabInfo {
   if (!tab) {
     throw new AppError("TAB_NOT_FOUND", `Tab '${tabId}' is not tracked. Create or list tabs first.`);
   }
+  tab.lastActivity = Date.now();
   return tab;
 }
 
@@ -50,6 +63,10 @@ export function updateTabUrl(tabId: string, url: string): void {
   if (!tab.visitedUrls.includes(url)) {
     tab.visitedUrls.push(url);
   }
+
+  if (tab.visitedUrls.length > VISITED_URLS_LIMIT) {
+    tab.visitedUrls = tab.visitedUrls.slice(-VISITED_URLS_LIMIT);
+  }
 }
 
 export function updateRefsCount(tabId: string, refsCount: number): void {
@@ -58,7 +75,27 @@ export function updateRefsCount(tabId: string, refsCount: number): void {
 }
 
 export function setupCleanup(closeTab: (tabId: string, userId: string) => Promise<void>): void {
+  const sweep = () => {
+    const now = Date.now();
+    const closers: Array<Promise<void>> = [];
+
+    for (const [tabId, tab] of tabs.entries()) {
+      if (now - tab.lastActivity > TAB_TTL_MS) {
+        tabs.delete(tabId);
+        closers.push(closeTab(tab.tabId, tab.userId).catch(() => undefined));
+      }
+    }
+
+    if (closers.length > 0) {
+      void Promise.allSettled(closers);
+    }
+  };
+
+  const sweepTimer = setInterval(sweep, SWEEP_INTERVAL_MS);
+  sweepTimer.unref();
+
   const handleShutdown = async () => {
+    clearInterval(sweepTimer);
     const openTabs = getAllTrackedTabs();
 
     await Promise.allSettled(openTabs.map(async (tab) => closeTab(tab.tabId, tab.userId)));
@@ -66,10 +103,12 @@ export function setupCleanup(closeTab: (tabId: string, userId: string) => Promis
   };
 
   process.once("SIGINT", () => {
+    clearInterval(sweepTimer);
     void handleShutdown();
   });
 
   process.once("SIGTERM", () => {
+    clearInterval(sweepTimer);
     void handleShutdown();
   });
 }

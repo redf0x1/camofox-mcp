@@ -37,6 +37,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
           tabId: tab.tabId,
           url: tab.url,
           createdAt: new Date().toISOString(),
+          lastActivity: Date.now(),
           userId,
           sessionKey,
           visitedUrls: [tab.url],
@@ -63,8 +64,11 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
       try {
         const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.closeTab(parsed.tabId, tracked.userId);
-        removeTrackedTab(parsed.tabId);
+        try {
+          await deps.client.closeTab(parsed.tabId, tracked.userId);
+        } finally {
+          removeTrackedTab(parsed.tabId);
+        }
         return okResult({ success: true, tabId: parsed.tabId });
       } catch (error) {
         return toErrorResult(error);
