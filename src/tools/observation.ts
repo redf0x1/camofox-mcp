@@ -34,7 +34,7 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "screenshot",
-    "Take visual screenshot as base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
+    "Take visual screenshot in base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab")
     },

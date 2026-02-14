@@ -172,7 +172,7 @@ Your MCP client should launch the MCP container separately (using `docker run -i
 
 IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 
-## Tools (27)
+## Tools (31)
 
 ### Tab Management
 | Tool | Description |
@@ -228,10 +228,54 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 | `get_stats` | Get session statistics and performance metrics |
 | `camofox_close_session` | Close all browser tabs for a user session |
 
+### Session Profiles
+| Tool | Description |
+|------|-------------|
+| `save_profile` | Save cookies from an active tab to a named on-disk profile |
+| `load_profile` | Load a saved profile's cookies into an active tab (restores login sessions) |
+| `list_profiles` | List saved profiles with metadata (cookie count, save date, description) |
+| `delete_profile` | Delete a saved profile from disk |
+
 ### Health
 | Tool | Description |
 |------|-------------|
 | `server_status` | Check CamoFox server health and connection |
+
+## Session Profiles
+
+Session Profiles let you persist authenticated browser state across MCP restarts by saving/loading cookies to/from disk.
+
+### Tools
+
+- `save_profile` — export cookies from an active tab and save them under a profile name
+- `load_profile` — load a saved profile into an active tab (imports cookies)
+- `list_profiles` — list all saved profiles and metadata
+- `delete_profile` — delete a saved profile permanently
+
+### Configuration
+
+- `CAMOFOX_PROFILES_DIR` — directory used to store profiles (default: `~/.camofox-mcp/profiles/`)
+
+### Example flow
+
+1. `create_tab`
+2. Navigate + login interactively
+3. `save_profile` (from the logged-in tab)
+4. Restart your MCP client/server
+5. `create_tab`
+6. `load_profile`
+7. `navigate` — you should already be authenticated
+
+### Docker persistence
+
+Mount a volume so profiles survive container restarts:
+
+```bash
+docker run -i --rm \
+  -e CAMOFOX_URL=http://host.docker.internal:9377 \
+  -v "$HOME/.camofox-mcp/profiles:/root/.camofox-mcp/profiles" \
+  redf0x1/camofox-mcp
+```
 
 ## Configuration
 
@@ -242,6 +286,7 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 | `CAMOFOX_URL` | `http://localhost:9377` | CamoFox server URL |
 | `CAMOFOX_TIMEOUT` | `30000` | Request timeout in ms |
 | `CAMOFOX_API_KEY` | — | API key (if CamoFox requires auth) |
+| `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | Directory to store persistent session profiles |
 | `CAMOFOX_TAB_TTL_MS` | `1800000` | Tab TTL in milliseconds (30min). Set to 0 to disable auto-eviction |
 | `CAMOFOX_MAX_TABS` | `100` | Maximum tracked tabs |
 | `CAMOFOX_VISITED_URLS_LIMIT` | `50` | Max URLs to keep in tab history |

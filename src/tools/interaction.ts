@@ -42,7 +42,7 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "type_text",
-    "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; use selector as fallback when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element.",
+    "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; otherwise use selector when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab"),
       ref: z.string().min(1).optional().describe("Element ref from snapshot (e.g. 'e1', 'e2')"),

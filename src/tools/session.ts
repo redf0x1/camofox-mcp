@@ -8,7 +8,7 @@ import type { ToolDeps } from "../server.js";
 export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
   server.tool(
     "import_cookies",
-    "Import cookies for authenticated sessions. Provide cookies as JSON string array. Restores login sessions without re-auth. Requires userId.",
+    "Import cookies for authenticated sessions. Provide cookies in a JSON string array. Restores login sessions without re-auth. Requires userId.",
     {
       userId: z.string().min(1).describe("User ID for session isolation"),
       cookies: z.string().min(1).describe("JSON string of cookie array to import")

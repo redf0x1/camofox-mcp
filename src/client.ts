@@ -94,6 +94,29 @@ const WaitForReadyResponseSchema = z.object({
   ready: z.boolean()
 });
 
+const CookieExportSchema = z
+  .object({
+    name: z.string(),
+    value: z.string(),
+    domain: z.string(),
+    path: z.string(),
+    expires: z.number().optional(),
+    httpOnly: z.boolean().optional(),
+    secure: z.boolean().optional(),
+    sameSite: z.enum(["Strict", "Lax", "None"]).optional()
+  })
+  .passthrough();
+
+// Response can be array of cookies or {cookies: [...]}
+const CookieExportResponseSchema = z.union([
+  z.array(CookieExportSchema),
+  z
+    .object({
+      cookies: z.array(CookieExportSchema)
+    })
+    .passthrough()
+]);
+
 export class CamofoxClient {
   private readonly baseUrl: string;
 
@@ -321,6 +344,16 @@ export class CamofoxClient {
         method: "GET"
       }
     , StatsResponseSchema);
+  }
+
+  async exportCookies(tabId: string, userId: string): Promise<unknown[]> {
+    const response = await this.requestJson(
+      `/tabs/${encodeURIComponent(tabId)}/cookies?userId=${encodeURIComponent(userId)}`,
+      { method: "GET" },
+      CookieExportResponseSchema
+    );
+
+    return Array.isArray(response) ? response : response.cookies;
   }
 
   async importCookies(userId: string, cookies: string): Promise<void> {

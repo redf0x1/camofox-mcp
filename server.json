@@ -1,13 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 27 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 31 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
   },
   "version_detail": {
-    "version": "1.3.1",
+    "version": "1.4.0",
     "release_date": "2026-02-14",
     "is_stable": true
   },
@@ -15,7 +15,7 @@
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.3.1",
+      "version": "1.4.0",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -36,6 +36,12 @@
           "name": "CAMOFOX_API_KEY",
           "description": "Optional API key for authentication",
           "required": false
+        },
+        {
+          "name": "CAMOFOX_PROFILES_DIR",
+          "description": "Custom profiles directory for session persistence",
+          "required": false,
+          "default": "~/.camofox-mcp/profiles/"
         }
       ]
     }
@@ -56,6 +62,10 @@
     {"name": "go_back", "description": "Navigate backward in browser history (Back button). Returns new page URL."},
     {"name": "go_forward", "description": "Navigate forward in browser history (Forward button). Returns new page URL."},
     {"name": "import_cookies", "description": "Import cookies for authenticated sessions. Provide cookies as JSON string array. Restores login sessions without re-auth. Requires userId."},
+    {"name": "save_profile", "description": "Export cookies from an active tab and save them to a named session profile on disk."},
+    {"name": "load_profile", "description": "Load a named session profile from disk and import its cookies into a tab's browser session."},
+    {"name": "list_profiles", "description": "List saved session profiles with basic metadata."},
+    {"name": "delete_profile", "description": "Delete a saved session profile from disk."},
     {"name": "list_tabs", "description": "List all open browser tabs with URLs and titles. Use to discover available tabs or verify tab state."},
     {"name": "navigate", "description": "Navigate a tab to a URL. Waits for page load. Use create_tab first, then navigate. Returns final URL (may differ due to redirects)."},
     {"name": "navigate_and_snapshot", "description": "Navigate to a URL and return the page snapshot. Combines navigate + wait + snapshot into one call."},

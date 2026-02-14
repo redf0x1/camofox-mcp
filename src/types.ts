@@ -2,6 +2,7 @@ export interface Config {
   camofoxUrl: string;
   apiKey?: string;
   defaultUserId: string;
+  profilesDir: string;
   timeout: number;
 }
 
@@ -86,3 +87,31 @@ export type SearchEngine =
   | "facebook"
   | "instagram"
   | "tiktok";
+
+export interface ProfileCookie {
+  name: string;
+  value: string;
+  domain: string;
+  path: string;
+  expires?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: string;
+  [key: string]: unknown;
+}
+
+export interface ProfileMetadata {
+  createdAt: string;
+  updatedAt: string;
+  lastUrl?: string | null;
+  description?: string | null;
+  cookieCount: number;
+}
+
+export interface Profile {
+  version: 1;
+  profileId: string;
+  userId: string;
+  cookies: ProfileCookie[];
+  metadata: ProfileMetadata;
+}

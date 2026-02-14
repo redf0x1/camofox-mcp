@@ -1,9 +1,13 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
+
 import { type Config } from "./types.js";
 
 interface CliArgs {
   camofoxUrl?: string;
   apiKey?: string;
   defaultUserId?: string;
+  profilesDir?: string;
   timeout?: number;
 }
 
@@ -32,6 +36,12 @@ function parseCliArgs(argv: string[]): CliArgs {
       continue;
     }
 
+    if (current === "--profiles-dir" && next) {
+      args.profilesDir = next;
+      i += 1;
+      continue;
+    }
+
     if (current === "--timeout" && next) {
       const timeout = Number.parseInt(next, 10);
       if (!Number.isNaN(timeout) && timeout > 0) {
@@ -52,6 +62,7 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
     camofoxUrl: cli.camofoxUrl ?? env.CAMOFOX_URL ?? "http://localhost:9377",
     apiKey: cli.apiKey ?? env.CAMOFOX_API_KEY,
     defaultUserId: cli.defaultUserId ?? env.CAMOFOX_DEFAULT_USER_ID ?? "default",
+    profilesDir: cli.profilesDir ?? env.CAMOFOX_PROFILES_DIR ?? join(homedir(), ".camofox-mcp", "profiles"),
     timeout: cli.timeout ?? (Number.isNaN(timeoutFromEnv) ? 30_000 : timeoutFromEnv)
   };
 }
