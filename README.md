@@ -122,6 +122,46 @@ Then configure:
 }
 ```
 
+### Docker
+
+#### Quick Start with Docker
+
+```bash
+# Standalone (connect to existing CamoFox server)
+docker run -i -e CAMOFOX_URL=http://host.docker.internal:9377 redf0x1/camofox-mcp
+
+# With docker compose (includes CamoFox browser)
+docker compose up -d
+```
+
+#### VS Code MCP Configuration (Docker)
+
+```json
+{
+  "camofox": {
+    "command": "docker",
+    "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "redf0x1/camofox-mcp"],
+    "type": "stdio"
+  }
+}
+```
+
+#### Claude Desktop Configuration (Docker)
+
+```json
+{
+  "mcpServers": {
+    "camofox": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "redf0x1/camofox-mcp"],
+      "type": "stdio"
+    }
+  }
+}
+```
+
+IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
+
 ## Tools (27)
 
 ### Tab Management

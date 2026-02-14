@@ -1,0 +1,24 @@
+services:
+  camofox-browser:
+    # NOTE: As of 2026-02-14, the upstream repo docs do not reference a published container image.
+    # Build locally from https://github.com/jo-inc/camofox-browser and tag it as `camofox-browser:latest`,
+    # or replace this with your own registry image.
+    image: camofox-browser:latest
+    ports:
+      - "9377:9377"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9377/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  camofox-mcp:
+    build: .
+    image: redf0x1/camofox-mcp:latest
+    environment:
+      - CAMOFOX_URL=http://camofox-browser:9377
+    depends_on:
+      camofox-browser:
+        condition: service_healthy
+    stdin_open: true

@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+dist
+*.md
+!README.md
+LICENSE
+.gitignore
+.npmignore
+*.tgz
+e2e/
+docs/
+server.json
