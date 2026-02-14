@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "camofox-mcp": "./dist/index.js"
+    "camofox-mcp": "dist/index.js"
   },
   "type": "module",
   "scripts": {
@@ -38,7 +38,7 @@
   "author": "redf0x1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/redf0x1/camofox-mcp"
+    "url": "git+https://github.com/redf0x1/camofox-mcp.git"
   },
   "homepage": "https://github.com/redf0x1/camofox-mcp#readme",
   "bugs": {
