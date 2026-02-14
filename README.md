@@ -127,12 +127,22 @@ Then configure:
 #### Quick Start with Docker
 
 ```bash
-# Standalone (connect to existing CamoFox server)
-docker run -i -e CAMOFOX_URL=http://host.docker.internal:9377 redf0x1/camofox-mcp
+# Standalone (connect to an existing CamoFox browser server running on the host)
+docker run -i --rm -e CAMOFOX_URL=http://host.docker.internal:9377 redf0x1/camofox-mcp
 
-# With docker compose (includes CamoFox browser)
+# Browser only (recommended): starts the CamoFox browser server in the background
 docker compose up -d
+
+# MCP (stdio): start the browser with compose, then launch the MCP container on-demand
+# Option A: plain docker (attach stdin; uses the compose network)
+docker run -i --rm --network=camofox-mcp_default -e CAMOFOX_URL=http://camofox-browser:9377 redf0x1/camofox-mcp
+
+# Option B: compose run (no TTY; attaches stdin/stdout for JSON-RPC)
+docker compose run --rm -T camofox-mcp
 ```
+
+Note: `docker compose up -d` detaches and does not provide stdin, so it can only be used to run the browser service.
+Your MCP client should launch the MCP container separately (using `docker run -i ...` or `docker compose run -T ...`).
 
 #### VS Code MCP Configuration (Docker)
 

@@ -7,13 +7,21 @@ services:
     ports:
       - "9377:9377"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9377/health"]
+      # CamoFox browser exposes a simple health endpoint at /health.
+      # This healthcheck uses curl (more common than wget). If your image lacks curl,
+      # replace this with an equivalent HTTP/TCP check.
+      test: ["CMD-SHELL", "curl -sf http://localhost:9377/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 15s
 
+  # MCP is a stdio server: it waits on stdin for JSON-RPC messages.
+  # Don't run it via `docker compose up -d`. Instead, start only the browser with `docker compose up -d`,
+  # then launch the MCP container on-demand via:
+  #   docker compose run --rm -T camofox-mcp
   camofox-mcp:
+    profiles: ["mcp"]
     build: .
     image: redf0x1/camofox-mcp:latest
     environment:

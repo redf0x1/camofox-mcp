@@ -30,9 +30,12 @@ RUN addgroup -S camofox && adduser -S camofox -G camofox
 WORKDIR /app
 
 # Copy only production artifacts
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+COPY --from=builder --chown=camofox:camofox /app/dist ./dist
+COPY --from=builder --chown=camofox:camofox /app/node_modules ./node_modules
+COPY --from=builder --chown=camofox:camofox /app/package.json ./
+
+# Ensure the non-root user can write under /app if future features need it
+RUN chown -R camofox:camofox /app
 
 # Switch to non-root
 USER camofox
