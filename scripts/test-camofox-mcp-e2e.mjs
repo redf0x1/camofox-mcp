@@ -1,10 +1,19 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const serverEntry = process.env.CAMOFOX_MCP_ENTRY ?? path.join(__dirname, "..", "dist", "index.js");
+const camofoxUrl = process.env.CAMOFOX_URL ?? "http://localhost:9377";
+const testUrl = process.env.CAMOFOX_E2E_URL ?? "https://bot.sannysoft.com";
 
 const transport = new StdioClientTransport({
   command: "node",
-  args: ["/Users/admin/DEV/camofox-mcp/dist/index.js"],
-  env: { ...process.env, CAMOFOX_URL: "http://localhost:9377" }
+  args: [serverEntry],
+  env: { ...process.env, CAMOFOX_URL: camofoxUrl }
 });
 
 const client = new Client({ name: "test-client", version: "1.0.0" });
@@ -26,7 +35,7 @@ const tabContent = JSON.parse(tab.content[0].text);
 const tabId = tabContent.tabId;
 
 console.log("\n=== Navigate ===");
-const nav = await client.callTool({ name: "navigate", arguments: { tabId, url: "https://bot.sannysoft.com" } });
+const nav = await client.callTool({ name: "navigate", arguments: { tabId, url: testUrl } });
 console.log(JSON.stringify(nav.content, null, 2));
 
 console.log("\n=== Snapshot ===");

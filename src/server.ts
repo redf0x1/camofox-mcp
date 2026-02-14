@@ -13,7 +13,7 @@ import { registerSessionTools } from "./tools/session.js";
 import { registerTabsTools } from "./tools/tabs.js";
 
 const require = createRequire(import.meta.url);
-const pkg = require("../package.json") as { version: string };
+const pkg: { version: string } = require("../package.json");
 
 export interface ToolDeps {
   client: CamofoxClient;

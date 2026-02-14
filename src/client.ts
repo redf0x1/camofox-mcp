@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { AppError } from "./errors.js";
 import type {
   ClickParams,
@@ -17,6 +19,81 @@ interface ApiErrorPayload {
   message?: string;
 }
 
+const ApiErrorPayloadSchema = z
+  .object({
+    error: z.string().optional(),
+    message: z.string().optional()
+  })
+  .passthrough();
+
+const HealthResponseSchema = z.object({
+  ok: z.boolean(),
+  running: z.boolean(),
+  browserConnected: z.boolean(),
+  version: z.string().optional()
+});
+
+const CreateTabRawResponseSchema = z
+  .object({
+    tabId: z.string().optional(),
+    id: z.string().optional(),
+    tab: z
+      .object({
+        id: z.string().optional()
+      })
+      .optional(),
+    url: z.string().optional(),
+    title: z.string().optional()
+  })
+  .passthrough();
+
+const NavigateRawResponseSchema = z
+  .object({
+    url: z.string().optional(),
+    title: z.string().optional()
+  })
+  .passthrough();
+
+const ClickRawResponseSchema = z
+  .object({
+    success: z.boolean().optional(),
+    navigated: z.boolean().optional()
+  })
+  .passthrough();
+
+const SnapshotRawResponseSchema = z
+  .object({
+    url: z.string().optional(),
+    snapshot: z.string().optional(),
+    refsCount: z.number().optional()
+  })
+  .passthrough();
+
+const LinksRawResponseSchema = z
+  .object({
+    links: z
+      .array(
+        z
+          .object({
+            text: z.string().optional(),
+            href: z.string().optional()
+          })
+          .passthrough()
+      )
+      .optional()
+  })
+  .passthrough();
+
+const StatsResponseSchema = z
+  .object({
+    visitedUrls: z.array(z.string()).optional()
+  })
+  .passthrough();
+
+const WaitForReadyResponseSchema = z.object({
+  ready: z.boolean()
+});
+
 export class CamofoxClient {
   private readonly baseUrl: string;
 
@@ -31,19 +108,19 @@ export class CamofoxClient {
   }
 
   async healthCheck(): Promise<HealthResponse> {
-    return this.requestJson<HealthResponse>("/health", { method: "GET" });
+    return this.requestJson("/health", { method: "GET" }, HealthResponseSchema);
   }
 
   async createTab(params: CreateTabParams): Promise<TabResponse> {
-    const response = await this.requestJson<Record<string, unknown>>("/tabs", {
+    const response = await this.requestJson("/tabs", {
       method: "POST",
       body: JSON.stringify(params)
-    });
+    }, CreateTabRawResponseSchema);
 
     const tabId =
-      (response.tabId as string | undefined) ??
-      (response.id as string | undefined) ??
-      ((response.tab as { id?: string } | undefined)?.id ?? undefined);
+      response.tabId ??
+      response.id ??
+      response.tab?.id;
 
     if (!tabId) {
       throw new AppError("INTERNAL_ERROR", "CamoFox did not return a valid tab ID");
@@ -51,8 +128,8 @@ export class CamofoxClient {
 
     return {
       tabId,
-      url: (response.url as string | undefined) ?? params.url ?? "about:blank",
-      title: response.title as string | undefined
+      url: response.url ?? params.url ?? "about:blank",
+      title: response.title
     };
   }
 
@@ -64,26 +141,26 @@ export class CamofoxClient {
   }
 
   async navigate(tabId: string, url: string, userId: string): Promise<NavigateResponse> {
-    const response = await this.requestJson<Record<string, unknown>>(`/tabs/${encodeURIComponent(tabId)}/navigate`, {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/navigate`, {
       method: "POST",
       body: JSON.stringify({ url, userId })
-    });
+    }, NavigateRawResponseSchema);
 
     return {
-      url: (response.url as string | undefined) ?? url,
-      title: response.title as string | undefined
+      url: response.url ?? url,
+      title: response.title
     };
   }
 
   async navigateMacro(tabId: string, macro: string, query: string, userId: string): Promise<NavigateResponse> {
-    const response = await this.requestJson<Record<string, unknown>>(`/tabs/${encodeURIComponent(tabId)}/navigate`, {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/navigate`, {
       method: "POST",
       body: JSON.stringify({ macro, query, userId })
-    });
+    }, NavigateRawResponseSchema);
 
     return {
-      url: (response.url as string | undefined) ?? "",
-      title: response.title as string | undefined
+      url: response.url ?? "",
+      title: response.title
     };
   }
 
@@ -109,14 +186,14 @@ export class CamofoxClient {
   }
 
   async click(tabId: string, params: ClickParams, userId: string): Promise<ClickResponse> {
-    const response = await this.requestJson<Record<string, unknown>>(`/tabs/${encodeURIComponent(tabId)}/click`, {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/click`, {
       method: "POST",
       body: JSON.stringify({ ...params, userId })
-    });
+    }, ClickRawResponseSchema);
 
     return {
-      success: (response.success as boolean | undefined) ?? true,
-      navigated: response.navigated as boolean | undefined
+      success: response.success ?? true,
+      navigated: response.navigated
     };
   }
 
@@ -142,14 +219,14 @@ export class CamofoxClient {
   }
 
   async waitForReady(tabId: string, userId: string, timeout?: number, waitForNetwork?: boolean): Promise<{ ready: boolean }> {
-    return this.requestJson<{ ready: boolean }>(`/tabs/${encodeURIComponent(tabId)}/wait`, {
+    return this.requestJson(`/tabs/${encodeURIComponent(tabId)}/wait`, {
       method: "POST",
       body: JSON.stringify({
         userId,
         timeout: timeout ?? 10000,
         waitForNetwork: waitForNetwork ?? true
       })
-    });
+    }, WaitForReadyResponseSchema);
   }
 
   async hover(tabId: string, params: { ref?: string; selector?: string }, userId: string): Promise<void> {
@@ -162,7 +239,7 @@ export class CamofoxClient {
         ...(params.ref ? { ref: params.ref } : {}),
         ...(params.selector ? { selector: params.selector } : {})
       })
-    });
+    }, z.unknown());
   }
 
   async waitForText(tabId: string, userId: string, text: string, timeoutMs?: number): Promise<void> {
@@ -196,17 +273,17 @@ export class CamofoxClient {
   }
 
   async snapshot(tabId: string, userId: string): Promise<SnapshotResponse> {
-    const response = await this.requestJson<Record<string, unknown>>(
+    const response = await this.requestJson(
       `/tabs/${encodeURIComponent(tabId)}/snapshot?userId=${encodeURIComponent(userId)}`,
       {
       method: "GET"
       }
-    );
+    , SnapshotRawResponseSchema);
 
     return {
-      url: (response.url as string | undefined) ?? "",
-      snapshot: (response.snapshot as string | undefined) ?? "",
-      refsCount: (response.refsCount as number | undefined) ?? 0
+      url: response.url ?? "",
+      snapshot: response.snapshot ?? "",
+      refsCount: response.refsCount ?? 0
     };
   }
 
@@ -221,29 +298,29 @@ export class CamofoxClient {
   }
 
   async getLinks(tabId: string, userId: string): Promise<LinkResponse> {
-    const response = await this.requestJson<Record<string, unknown>>(
+    const response = await this.requestJson(
       `/tabs/${encodeURIComponent(tabId)}/links?userId=${encodeURIComponent(userId)}`,
       {
       method: "GET"
       }
-    );
+    , LinksRawResponseSchema);
 
-    const links = Array.isArray(response.links) ? response.links : [];
+    const links = response.links ?? [];
     return {
       links: links.map((item) => ({
-        text: String((item as Record<string, unknown>).text ?? ""),
-        href: String((item as Record<string, unknown>).href ?? "")
+        text: item.text ?? "",
+        href: item.href ?? ""
       }))
     };
   }
 
   async getStats(tabId: string, userId: string): Promise<StatsResponse> {
-    return this.requestJson<StatsResponse>(
+    return this.requestJson(
       `/tabs/${encodeURIComponent(tabId)}/stats?userId=${encodeURIComponent(userId)}`,
       {
         method: "GET"
       }
-    );
+    , StatsResponseSchema);
   }
 
   async importCookies(userId: string, cookies: string): Promise<void> {
@@ -254,12 +331,32 @@ export class CamofoxClient {
     });
   }
 
-  private async requestJson<T>(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<T> {
+  private async requestJson<T>(
+    path: string,
+    init: RequestInit & { requireApiKey?: boolean },
+    schema: z.ZodType<T>
+  ): Promise<T> {
     const response = await this.request(path, init);
-    if (response.status === 204) {
-      return {} as T;
+    const rawBody = await response.text();
+
+    let json: unknown = null;
+    if (rawBody) {
+      try {
+        json = JSON.parse(rawBody);
+      } catch {
+        throw new AppError("INTERNAL_ERROR", "CamoFox API returned invalid JSON");
+      }
     }
-    return (await response.json()) as T;
+
+    const parsed = schema.safeParse(json);
+    if (!parsed.success) {
+      throw new AppError(
+        "INTERNAL_ERROR",
+        `Unexpected response from CamoFox API: ${parsed.error.issues.map((issue) => issue.message).join(", ")}`
+      );
+    }
+
+    return parsed.data;
   }
 
   private async requestBinary(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<ArrayBuffer> {
@@ -280,21 +377,24 @@ export class CamofoxClient {
         throw new AppError("API_KEY_REQUIRED", "CAMOFOX_API_KEY is required for this operation");
       }
 
-      const headers: Record<string, string> = {
-        "content-type": "application/json"
-      };
+      const headers = new Headers();
+      headers.set("content-type", "application/json");
 
       if (this.apiKey) {
-        headers["x-api-key"] = this.apiKey;
-        headers.authorization = `Bearer ${this.apiKey}`;
+        headers.set("x-api-key", this.apiKey);
+        headers.set("authorization", `Bearer ${this.apiKey}`);
+      }
+
+      if (init.headers) {
+        const extra = new Headers(init.headers);
+        extra.forEach((value, key) => {
+          headers.set(key, value);
+        });
       }
 
       const response = await fetch(`${this.baseUrl}${path}`, {
         ...init,
-        headers: {
-          ...headers,
-          ...(init.headers as Record<string, string> | undefined)
-        },
+        headers,
         signal: controller.signal
       });
 
@@ -328,8 +428,14 @@ export class CamofoxClient {
     const rawBody = await response.text();
     if (rawBody) {
       try {
-        const body = JSON.parse(rawBody) as ApiErrorPayload;
-        message = body.error ?? body.message ?? rawBody;
+        const json: unknown = JSON.parse(rawBody);
+        const parsed = ApiErrorPayloadSchema.safeParse(json);
+        if (parsed.success) {
+          const body: ApiErrorPayload = parsed.data;
+          message = body.error ?? body.message ?? rawBody;
+        } else {
+          message = rawBody;
+        }
       } catch {
         message = rawBody;
       }
