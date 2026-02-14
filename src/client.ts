@@ -339,13 +339,21 @@ export class CamofoxClient {
     const response = await this.request(path, init);
     const rawBody = await response.text();
 
-    let json: unknown = null;
-    if (rawBody) {
-      try {
-        json = JSON.parse(rawBody);
-      } catch {
-        throw new AppError("INTERNAL_ERROR", "CamoFox API returned invalid JSON");
-      }
+    if (!rawBody || rawBody.trim().length === 0) {
+      throw new AppError(
+        "INTERNAL_ERROR",
+        `Expected JSON response from ${path} but received empty body (status ${response.status})`
+      );
+    }
+
+    let json: unknown;
+    try {
+      json = JSON.parse(rawBody);
+    } catch {
+      throw new AppError(
+        "INTERNAL_ERROR",
+        `Expected JSON response from ${path} but received non-JSON body (status ${response.status})`
+      );
     }
 
     const parsed = schema.safeParse(json);
