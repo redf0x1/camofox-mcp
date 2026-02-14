@@ -255,6 +255,16 @@ Session Profiles let you persist authenticated browser state across MCP restarts
 ### Configuration
 
 - `CAMOFOX_PROFILES_DIR` — directory used to store profiles (default: `~/.camofox-mcp/profiles/`)
+- `CAMOFOX_AUTO_SAVE` — enable auto-save/auto-load of an "auto profile" (default: `true`). Set to `false` to disable.
+
+### Auto-save / auto-load
+
+By default, CamoFox MCP will persist sessions automatically:
+
+- On `close_tab` and `camofox_close_session`, cookies are exported and saved to `_auto_{userId}` (best-effort; 5-second timeout).
+- On `create_tab`, if `_auto_{userId}` exists, it is loaded automatically (best-effort; 5-second timeout).
+
+Note: auto-load requires `CAMOFOX_API_KEY` because importing cookies requires an API key.
 
 ### Example flow
 
@@ -287,6 +297,7 @@ docker run -i --rm \
 | `CAMOFOX_TIMEOUT` | `30000` | Request timeout in ms |
 | `CAMOFOX_API_KEY` | — | API key (if CamoFox requires auth) |
 | `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | Directory to store persistent session profiles |
+| `CAMOFOX_AUTO_SAVE` | `true` | Auto-save on close + auto-load on create via `_auto_{userId}` |
 | `CAMOFOX_TAB_TTL_MS` | `1800000` | Tab TTL in milliseconds (30min). Set to 0 to disable auto-eviction |
 | `CAMOFOX_MAX_TABS` | `100` | Maximum tracked tabs |
 | `CAMOFOX_VISITED_URLS_LIMIT` | `50` | Max URLs to keep in tab history |

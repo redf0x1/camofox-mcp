@@ -2,8 +2,11 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { AppError, okResult, toErrorResult } from "../errors.js";
-import { clearTrackedTabsByUserId, getTrackedTab, incrementToolCall } from "../state.js";
+import { clearTrackedTabsByUserId, getAllTrackedTabs, getTrackedTab, incrementToolCall } from "../state.js";
+import { saveProfile, withAutoTimeout } from "../profiles.js";
 import type { ToolDeps } from "../server.js";
+
+const AUTO_PROFILE_TIMEOUT_MS = 5_000;
 
 export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
   server.tool(
@@ -69,13 +72,43 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           })
           .parse(input);
         const tracked = getTrackedTab(parsed.tab_id);
+
+        let autoSaved = false;
+        // Auto-save before session close (best-effort; never blocks close)
+        if (deps.config.autoSave) {
+          const saved = await withAutoTimeout(
+            (async () => {
+              const allTabs = getAllTrackedTabs().filter((t) => t.userId === tracked.userId);
+              const tabForExport = allTabs.find((t) => t.tabId === parsed.tab_id) ?? allTabs[0];
+              if (!tabForExport) {
+                return false;
+              }
+
+              const cookies = await deps.client.exportCookies(tabForExport.tabId, tracked.userId);
+              if (cookies.length <= 0) {
+                return false;
+              }
+
+              const autoProfileId = `_auto_${tracked.userId}`;
+              await saveProfile(deps.config.profilesDir, autoProfileId, tracked.userId, cookies, {
+                description: "Auto-saved session",
+                lastUrl: tabForExport.url
+              });
+              return true;
+            })(),
+            AUTO_PROFILE_TIMEOUT_MS
+          );
+          autoSaved = saved ?? false;
+        }
+
         try {
           await deps.client.closeSession(tracked.userId);
         } finally {
           clearTrackedTabsByUserId(tracked.userId);
         }
         return okResult({
-          message: `Session closed. All tabs for user ${tracked.userId} have been released.`
+          message: `Session closed. All tabs for user ${tracked.userId} have been released.`,
+          autoSaved
         });
       } catch (error) {
         return toErrorResult(error);

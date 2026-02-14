@@ -9,6 +9,19 @@ interface CliArgs {
   defaultUserId?: string;
   profilesDir?: string;
   timeout?: number;
+  autoSave?: boolean;
+}
+
+function parseBoolFlag(raw: string): boolean | undefined {
+  const normalized = raw.trim().toLowerCase();
+  if (["true", "1", "yes", "y", "on"].includes(normalized)) return true;
+  if (["false", "0", "no", "n", "off"].includes(normalized)) return false;
+  return undefined;
+}
+
+function isFalsy(val: string | undefined): boolean {
+  if (!val) return false;
+  return ["false", "0", "no", "off"].includes(val.trim().toLowerCase());
 }
 
 function parseCliArgs(argv: string[]): CliArgs {
@@ -48,6 +61,21 @@ function parseCliArgs(argv: string[]): CliArgs {
         args.timeout = timeout;
       }
       i += 1;
+      continue;
+    }
+
+    if (current === "--auto-save") {
+      // Allow: --auto-save (implies true) OR --auto-save false
+      if (next && !next.startsWith("--")) {
+        const parsed = parseBoolFlag(next);
+        if (parsed !== undefined) {
+          args.autoSave = parsed;
+          i += 1;
+        }
+      } else {
+        args.autoSave = true;
+      }
+      continue;
     }
   }
 
@@ -63,6 +91,7 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
     apiKey: cli.apiKey ?? env.CAMOFOX_API_KEY,
     defaultUserId: cli.defaultUserId ?? env.CAMOFOX_DEFAULT_USER_ID ?? "default",
     profilesDir: cli.profilesDir ?? env.CAMOFOX_PROFILES_DIR ?? join(homedir(), ".camofox-mcp", "profiles"),
-    timeout: cli.timeout ?? (Number.isNaN(timeoutFromEnv) ? 30_000 : timeoutFromEnv)
+    timeout: cli.timeout ?? (Number.isNaN(timeoutFromEnv) ? 30_000 : timeoutFromEnv),
+    autoSave: cli.autoSave ?? !isFalsy(env.CAMOFOX_AUTO_SAVE)
   };
 }

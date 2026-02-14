@@ -4,9 +4,12 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { okResult, toErrorResult } from "../errors.js";
+import { loadProfile, saveProfile, withAutoTimeout } from "../profiles.js";
 import { getTrackedTab, listTrackedTabs, removeTrackedTab, trackTab } from "../state.js";
 import type { ToolDeps } from "../server.js";
 import type { TabInfo } from "../types.js";
+
+const AUTO_PROFILE_TIMEOUT_MS = 5_000;
 
 export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
   server.tool(
@@ -47,6 +50,24 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
 
         trackTab(tracked);
 
+        // Auto-load profile if enabled (requires API key for importCookies)
+        // Note: This behavior is covered via E2E tests (requires a real server/client). Unit tests cover disk I/O + timeout helper.
+        if (deps.config.autoSave && deps.config.apiKey) {
+          const autoProfileId = `_auto_${tracked.userId}`;
+          await withAutoTimeout(
+            (async () => {
+              const profile = await loadProfile(deps.config.profilesDir, autoProfileId);
+              if (profile.userId !== tracked.userId) {
+                return;
+              }
+              if (profile.cookies.length > 0) {
+                await deps.client.importCookies(tracked.userId, JSON.stringify(profile.cookies));
+              }
+            })(),
+            AUTO_PROFILE_TIMEOUT_MS
+          );
+        }
+
         return okResult({ tabId: tab.tabId, url: tab.url });
       } catch (error) {
         return toErrorResult(error);
@@ -64,12 +85,34 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
       try {
         const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
+
+        let autoSaved = false;
+        // Auto-save profile before closing (best-effort; never blocks close)
+        if (deps.config.autoSave) {
+          const saved = await withAutoTimeout(
+            (async () => {
+              const cookies = await deps.client.exportCookies(parsed.tabId, tracked.userId);
+              if (cookies.length <= 0) {
+                return false;
+              }
+              const autoProfileId = `_auto_${tracked.userId}`;
+              await saveProfile(deps.config.profilesDir, autoProfileId, tracked.userId, cookies, {
+                description: "Auto-saved session",
+                lastUrl: tracked.url
+              });
+              return true;
+            })(),
+            AUTO_PROFILE_TIMEOUT_MS
+          );
+          autoSaved = saved ?? false;
+        }
+
         try {
           await deps.client.closeTab(parsed.tabId, tracked.userId);
         } finally {
           removeTrackedTab(parsed.tabId);
         }
-        return okResult({ success: true, tabId: parsed.tabId });
+        return okResult({ success: true, tabId: parsed.tabId, autoSaved });
       } catch (error) {
         return toErrorResult(error);
       }

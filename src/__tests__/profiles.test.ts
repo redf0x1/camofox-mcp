@@ -11,7 +11,8 @@ import {
   listProfiles,
   loadProfile,
   saveProfile,
-  validateProfileId
+  validateProfileId,
+  withAutoTimeout
 } from "../profiles.js";
 import { getAllTrackedTabs, removeTrackedTab, trackTab } from "../state.js";
 import { registerProfileTools } from "../tools/profiles.js";
@@ -56,11 +57,26 @@ function makeTab(overrides: Partial<TabInfo> = {}): TabInfo {
 }
 
 describe("profiles", () => {
+  describe("withAutoTimeout", () => {
+    it("returns undefined on slow operation", async () => {
+      const slow = new Promise<string>((resolve) => setTimeout(() => resolve("ok"), 100));
+      const result = await withAutoTimeout(slow, 10);
+      expect(result).toBeUndefined();
+    });
+
+    it("returns value on fast operation", async () => {
+      const fast = Promise.resolve("ok");
+      const result = await withAutoTimeout(fast, 1000);
+      expect(result).toBe("ok");
+    });
+  });
+
   describe("validateProfileId", () => {
     it("accepts valid profile IDs", () => {
       const valid = [
         "a",
         "A0",
+        "_auto_user-1",
         "abc-123",
         "abc_def",
         "a.b",

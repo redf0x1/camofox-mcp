@@ -4,6 +4,7 @@ export interface Config {
   defaultUserId: string;
   profilesDir: string;
   timeout: number;
+  autoSave: boolean;
 }
 
 export interface HealthResponse {

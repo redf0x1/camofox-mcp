@@ -4,7 +4,18 @@ import { z } from "zod";
 import type { Profile, ProfileCookie, ProfileMetadata } from "./types.js";
 import { AppError } from "./errors.js";
 
-const PROFILE_ID_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/;
+const PROFILE_ID_REGEX = /^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,63}$/;
+
+export async function withAutoTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms))
+    ]);
+  } catch {
+    return undefined;
+  }
+}
 
 const ProfileCookieSchema = z
   .object({
@@ -45,7 +56,7 @@ export function validateProfileId(profileId: string): void {
   if (!PROFILE_ID_REGEX.test(profileId)) {
     throw new AppError(
       "VALIDATION_ERROR",
-      `Invalid profile ID "${profileId}". Use 1-64 chars: letters, numbers, dots, hyphens, underscores. Must start with alphanumeric.`
+      `Invalid profile ID "${profileId}". Use 1-64 chars: letters, numbers, dots, hyphens, underscores. Must start with alphanumeric or underscore.`
     );
   }
 }
