@@ -1,10 +1,24 @@
 import { AppError } from "./errors.js";
 import type { TabInfo } from "./types.js";
 
-const TAB_TTL_MS = parseInt(process.env.CAMOFOX_TAB_TTL_MS || '1800000', 10);    // 30min default
-const MAX_TABS = parseInt(process.env.CAMOFOX_MAX_TABS || '100', 10);             // 100 tabs max
-const VISITED_URLS_LIMIT = parseInt(process.env.CAMOFOX_VISITED_URLS_LIMIT || '50', 10); // 50 URLs max
-const SWEEP_INTERVAL_MS = parseInt(process.env.CAMOFOX_SWEEP_INTERVAL_MS || '60000', 10); // 1min sweep
+function parseEnvInt(key: string, defaultVal: number, min: number): number {
+  const raw = parseInt(process.env[key] || "", 10);
+  return Number.isNaN(raw) ? defaultVal : Math.max(raw, min);
+}
+
+const TAB_TTL_MS = parseEnvInt("CAMOFOX_TAB_TTL_MS", 1_800_000, 0); // 30min, min 0 (0 = disabled)
+const MAX_TABS = parseEnvInt("CAMOFOX_MAX_TABS", 100, 1); // 100, min 1
+const VISITED_URLS_LIMIT = parseEnvInt("CAMOFOX_VISITED_URLS_LIMIT", 50, 1); // 50, min 1
+const SWEEP_INTERVAL_MS = parseEnvInt("CAMOFOX_SWEEP_INTERVAL_MS", 60_000, 1_000); // 1min, min 1s
+
+const CLOSE_TAB_TIMEOUT_MS = 10_000;
+const SHUTDOWN_TIMEOUT_MS = 5_000;
+
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
+  ]);
 
 const tabs = new Map<string, TabInfo>();
 
@@ -76,13 +90,19 @@ export function updateRefsCount(tabId: string, refsCount: number): void {
 
 export function setupCleanup(closeTab: (tabId: string, userId: string) => Promise<void>): void {
   const sweep = () => {
+    if (TAB_TTL_MS <= 0) {
+      return;
+    }
+
     const now = Date.now();
-    const closers: Array<Promise<void>> = [];
+    const closers: Array<Promise<unknown>> = [];
 
     for (const [tabId, tab] of tabs.entries()) {
       if (now - tab.lastActivity > TAB_TTL_MS) {
         tabs.delete(tabId);
-        closers.push(closeTab(tab.tabId, tab.userId).catch(() => undefined));
+        closers.push(
+          withTimeout(closeTab(tab.tabId, tab.userId), CLOSE_TAB_TIMEOUT_MS).catch(() => undefined)
+        );
       }
     }
 
@@ -91,24 +111,36 @@ export function setupCleanup(closeTab: (tabId: string, userId: string) => Promis
     }
   };
 
-  const sweepTimer = setInterval(sweep, SWEEP_INTERVAL_MS);
-  sweepTimer.unref();
+  let sweepTimer: NodeJS.Timeout | undefined;
+  if (TAB_TTL_MS > 0 && SWEEP_INTERVAL_MS > 0) {
+    sweepTimer = setInterval(sweep, SWEEP_INTERVAL_MS);
+    sweepTimer.unref();
+  }
 
   const handleShutdown = async () => {
-    clearInterval(sweepTimer);
-    const openTabs = getAllTrackedTabs();
+    if (sweepTimer) {
+      clearInterval(sweepTimer);
+    }
 
-    await Promise.allSettled(openTabs.map(async (tab) => closeTab(tab.tabId, tab.userId)));
+    const shutdownPromise = Promise.allSettled(
+      Array.from(tabs.entries()).map(async ([tabId, tab]) => {
+        tabs.delete(tabId);
+        await withTimeout(closeTab(tabId, tab.userId), CLOSE_TAB_TIMEOUT_MS).catch(() => undefined);
+      })
+    );
+
+    await Promise.race([
+      shutdownPromise,
+      new Promise((resolve) => setTimeout(resolve, SHUTDOWN_TIMEOUT_MS))
+    ]);
     process.exit(0);
   };
 
   process.once("SIGINT", () => {
-    clearInterval(sweepTimer);
     void handleShutdown();
   });
 
   process.once("SIGTERM", () => {
-    clearInterval(sweepTimer);
     void handleShutdown();
   });
 }
