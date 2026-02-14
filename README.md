@@ -194,8 +194,10 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 |------|-------------|
 | `click` | Click element by ref (from snapshot) or CSS selector |
 | `type_text` | Type text into input fields by ref or CSS selector |
-| `press_key` | Press keyboard keys (Enter, Tab, Escape, etc.) |
+| `camofox_press_key` | Press keyboard keys (Enter, Tab, Escape, etc.) |
 | `scroll` | Scroll page up or down by pixel amount |
+| `camofox_hover` | Hover over an element to trigger tooltips, dropdowns, or hover states |
+| `camofox_wait_for` | Wait for page readiness after navigation or dynamic updates |
 
 ### Batch / Composite
 | Tool | Description |
@@ -212,6 +214,7 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 | `snapshot` | Get accessibility tree — PRIMARY way to read pages. Token-efficient |
 | `screenshot` | Take visual screenshot as base64 PNG |
 | `get_links` | Get all hyperlinks with URLs and text |
+| `camofox_wait_for_text` | Wait for specific text to appear on the page |
 
 ### Search
 | Tool | Description |
@@ -223,6 +226,11 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 |------|-------------|
 | `import_cookies` | Import cookies for authenticated sessions |
 | `get_stats` | Get session statistics and performance metrics |
+| `camofox_close_session` | Close all browser tabs for a user session |
+
+### Health
+| Tool | Description |
+|------|-------------|
 | `server_status` | Check CamoFox server health and connection |
 
 ## Configuration
