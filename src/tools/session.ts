@@ -14,11 +14,18 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
     "Import cookies for authenticated sessions. Provide cookies in a JSON string array. Restores login sessions without re-auth. Requires userId.",
     {
       userId: z.string().min(1).describe("User ID for session isolation"),
-      cookies: z.string().min(1).describe("JSON string of cookie array to import")
+      cookies: z.string().min(1).describe("JSON string of cookie array to import"),
+      tabId: z.string().optional().describe("Tab ID to target correct session (needed when using presets)")
     },
     async (input: unknown) => {
       try {
-        const parsed = z.object({ userId: z.string().min(1).describe("User ID for session isolation"), cookies: z.string().min(1).describe("JSON string of cookie array to import") }).parse(input);
+        const parsed = z
+          .object({
+            userId: z.string().min(1).describe("User ID for session isolation"),
+            cookies: z.string().min(1).describe("JSON string of cookie array to import"),
+            tabId: z.string().optional().describe("Tab ID to target correct session (needed when using presets)")
+          })
+          .parse(input);
 
         if (!deps.config.apiKey) {
           throw new AppError("API_KEY_REQUIRED", "CAMOFOX_API_KEY is required to import cookies");
@@ -35,7 +42,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           throw new AppError("VALIDATION_ERROR", "cookies must be a JSON array");
         }
 
-        await deps.client.importCookies(parsed.userId, cookies);
+        await deps.client.importCookies(parsed.userId, cookies, parsed.tabId);
         return okResult({ success: true });
       } catch (error) {
         return toErrorResult(error);

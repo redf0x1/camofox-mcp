@@ -104,7 +104,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
                 return;
               }
               if (profile.cookies.length > 0) {
-                await deps.client.importCookies(tracked.userId, profile.cookies);
+                await deps.client.importCookies(tracked.userId, profile.cookies, tab.tabId);
               }
             })(),
             AUTO_PROFILE_TIMEOUT_MS

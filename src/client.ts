@@ -391,10 +391,10 @@ export class CamofoxClient {
     return Array.isArray(response) ? response : response.cookies;
   }
 
-  async importCookies(userId: string, cookies: unknown[]): Promise<void> {
+  async importCookies(userId: string, cookies: unknown[], tabId?: string): Promise<void> {
     await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
       method: "POST",
-      body: JSON.stringify({ cookies }),
+      body: JSON.stringify({ cookies, ...(tabId && { tabId }) }),
       requireApiKey: true
     });
   }
