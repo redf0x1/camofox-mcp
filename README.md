@@ -53,9 +53,9 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 ### 1. Install CamoFox Browser
 
-Download from [CamoFox Browser Server releases](https://github.com/redf0x1/camofox-browser/releases) (v2.0.0+) and start:
+Download from [CamoFox Browser Server releases](https://github.com/redf0x1/camofox-browser/releases) (v1.0.0+) and start:
 
-If you want **per-session geo presets** (locale/timezone/geolocation/viewport), ensure your camofox-browser server supports `preset` on tab creation and exposes `GET /presets` (v2.0.0+).
+If you want **per-session geo presets** (locale/timezone/geolocation/viewport), ensure your camofox-browser server supports `preset` on tab creation and exposes `GET /presets` (v1.0.0+).
 
 ```bash
 ./camofox-browser   # Starts on port 9377
