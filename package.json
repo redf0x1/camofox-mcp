@@ -1,6 +1,6 @@
 {
   "name": "camofox-mcp",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Anti-detection browser MCP server for AI agents — navigate, interact, and automate the web without getting blocked",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,7 +9,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ./scripts/ensure-bin-exec.mjs",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
