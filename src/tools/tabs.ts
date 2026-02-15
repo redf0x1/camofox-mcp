@@ -17,14 +17,52 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
     "Create a new browser tab with anti-detection fingerprinting. Each tab gets a unique fingerprint. Optionally provide a URL and userId for session isolation. Returns the tab ID for subsequent operations.",
     {
       url: z.string().url().optional().describe("Full URL including protocol (e.g. 'https://example.com')"),
-      userId: z.string().min(1).optional().describe("User ID for session isolation")
+      userId: z.string().min(1).optional().describe("User ID for session isolation"),
+      preset: z.string().optional().describe(
+        'Named geo preset (e.g. "us-east", "us-west", "japan", "uk", "germany", "vietnam", "singapore", "australia"). Sets locale, timezone, and geolocation.'
+      ),
+      locale: z.string().optional().describe('BCP 47 locale override (e.g. "ja-JP", "vi-VN")'),
+      timezoneId: z.string().optional().describe('IANA timezone override (e.g. "Asia/Tokyo", "Asia/Ho_Chi_Minh")'),
+      geolocation: z
+        .object({
+          latitude: z.number().min(-90).max(90),
+          longitude: z.number().min(-180).max(180)
+        })
+        .optional()
+        .describe("GPS coordinates override"),
+      viewport: z
+        .object({
+          width: z.number().int().min(320).max(3840),
+          height: z.number().int().min(240).max(2160)
+        })
+        .optional()
+        .describe("Browser viewport size override")
     },
     async (input: unknown) => {
       try {
         const parsed = z
           .object({
             url: z.string().url().optional().describe("Full URL including protocol (e.g. 'https://example.com')"),
-            userId: z.string().min(1).optional().describe("User ID for session isolation")
+            userId: z.string().min(1).optional().describe("User ID for session isolation"),
+            preset: z.string().optional().describe(
+              'Named geo preset (e.g. "us-east", "us-west", "japan", "uk", "germany", "vietnam", "singapore", "australia"). Sets locale, timezone, and geolocation.'
+            ),
+            locale: z.string().optional().describe('BCP 47 locale override (e.g. "ja-JP", "vi-VN")'),
+            timezoneId: z.string().optional().describe('IANA timezone override (e.g. "Asia/Tokyo", "Asia/Ho_Chi_Minh")'),
+            geolocation: z
+              .object({
+                latitude: z.number().min(-90).max(90),
+                longitude: z.number().min(-180).max(180)
+              })
+              .optional()
+              .describe("GPS coordinates override"),
+            viewport: z
+              .object({
+                width: z.number().int().min(320).max(3840),
+                height: z.number().int().min(240).max(2160)
+              })
+              .optional()
+              .describe("Browser viewport size override")
           })
           .parse(input);
 
@@ -33,7 +71,12 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
         const tab = await deps.client.createTab({
           userId,
           sessionKey,
-          url: parsed.url
+          url: parsed.url,
+          preset: parsed.preset,
+          locale: parsed.locale,
+          timezoneId: parsed.timezoneId,
+          geolocation: parsed.geolocation,
+          viewport: parsed.viewport
         });
 
         const tracked: TabInfo = {

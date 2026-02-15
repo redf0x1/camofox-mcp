@@ -8,6 +8,7 @@ import { registerHealthTools } from "./tools/health.js";
 import { registerInteractionTools, registerPressKeyTool } from "./tools/interaction.js";
 import { registerNavigationTools } from "./tools/navigation.js";
 import { registerObservationTools } from "./tools/observation.js";
+import { registerPresetTools } from "./tools/presets.js";
 import { registerProfileTools } from "./tools/profiles.js";
 import { registerSearchTools } from "./tools/search.js";
 import { registerSessionTools } from "./tools/session.js";
@@ -41,6 +42,7 @@ export function createServer(config: Config): { server: McpServer; client: Camof
   registerSessionTools(server, deps);
   registerBatchTools(server, deps);
   registerProfileTools(server, deps);
+  registerPresetTools(server, deps);
 
   return { server, client };
 }

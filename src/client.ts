@@ -9,6 +9,7 @@ import type {
   HealthResponse,
   LinkResponse,
   NavigateResponse,
+  PresetsResponse,
   SnapshotResponse,
   StatsResponse,
   TabResponse
@@ -32,6 +33,25 @@ const HealthResponseSchema = z.object({
   browserConnected: z.boolean(),
   version: z.string().optional()
 });
+
+const PresetInfoSchema = z
+  .object({
+    locale: z.string(),
+    timezoneId: z.string(),
+    geolocation: z
+      .object({
+        latitude: z.number(),
+        longitude: z.number()
+      })
+      .optional()
+  })
+  .passthrough();
+
+const PresetsResponseSchema = z
+  .object({
+    presets: z.record(z.string(), PresetInfoSchema)
+  })
+  .passthrough();
 
 const CreateTabRawResponseSchema = z
   .object({
@@ -132,6 +152,21 @@ export class CamofoxClient {
 
   async healthCheck(): Promise<HealthResponse> {
     return this.requestJson("/health", { method: "GET" }, HealthResponseSchema);
+  }
+
+  async listPresets(): Promise<PresetsResponse> {
+    try {
+      return await this.requestJson("/presets", { method: "GET" }, PresetsResponseSchema);
+    } catch (error) {
+      // The CamoFox API currently maps all 404s to TAB_NOT_FOUND. If /presets
+      // isn't supported by the upstream camofox-browser server, degrade
+      // gracefully by returning an empty preset list.
+      if (error instanceof AppError && error.code === "TAB_NOT_FOUND" && error.status === 404) {
+        return { presets: {} };
+      }
+
+      throw error;
+    }
   }
 
   async createTab(params: CreateTabParams): Promise<TabResponse> {

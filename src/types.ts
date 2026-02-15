@@ -18,6 +18,21 @@ export interface CreateTabParams {
   userId: string;
   sessionKey: string;
   url?: string;
+  preset?: string;
+  locale?: string;
+  timezoneId?: string;
+  geolocation?: { latitude: number; longitude: number };
+  viewport?: { width: number; height: number };
+}
+
+export interface PresetInfo {
+  locale: string;
+  timezoneId: string;
+  geolocation?: { latitude: number; longitude: number };
+}
+
+export interface PresetsResponse {
+  presets: Record<string, PresetInfo>;
 }
 
 export interface TabResponse {

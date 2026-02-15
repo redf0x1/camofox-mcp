@@ -40,7 +40,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 27 | 1 | 33 |
+| Tools | 32 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -54,6 +54,8 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 ### 1. Install CamoFox Browser
 
 Download from [CamoFox releases](https://github.com/jo-inc/camofox-browser/releases) and start:
+
+If you want **per-session geo presets** (locale/timezone/geolocation/viewport), run a camofox-browser fork that supports `preset` on tab creation and exposes `GET /presets`.
 
 ```bash
 ./camofox-browser   # Starts on port 9377
@@ -172,7 +174,7 @@ Your MCP client should launch the MCP container separately (using `docker run -i
 
 IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 
-## Tools (31)
+## Tools (32)
 
 ### Tab Management
 | Tool | Description |
@@ -180,6 +182,49 @@ IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 | `create_tab` | Create a new tab with anti-detection fingerprinting |
 | `close_tab` | Close a tab and release resources |
 | `list_tabs` | List all open tabs with URLs and titles |
+
+### Presets
+| Tool | Description |
+|------|-------------|
+| `list_presets` | List all available geo presets supported by the connected CamoFox browser server |
+
+### Geo Presets
+
+`create_tab` supports optional regional configuration via a named `preset`, plus per-field overrides:
+
+- `preset` — preset name (e.g., `japan`, `vietnam`, `uk`)
+- `locale` — BCP-47 locale (e.g., `ja-JP`)
+- `timezoneId` — IANA timezone (e.g., `Asia/Tokyo`)
+- `geolocation` — `{ latitude, longitude }`
+- `viewport` — `{ width, height }`
+
+Resolution order: `preset` defaults → individual field overrides → server defaults.
+
+Built-in presets (when supported by your camofox-browser server):
+
+| Preset | Locale | Timezone | Location |
+|--------|--------|----------|----------|
+| `us-east` | en-US | America/New_York | New York |
+| `us-west` | en-US | America/Los_Angeles | Los Angeles |
+| `japan` | ja-JP | Asia/Tokyo | Tokyo |
+| `uk` | en-GB | Europe/London | London |
+| `germany` | de-DE | Europe/Berlin | Berlin |
+| `vietnam` | vi-VN | Asia/Ho_Chi_Minh | Ho Chi Minh City |
+| `singapore` | en-SG | Asia/Singapore | Singapore |
+| `australia` | en-AU | Australia/Sydney | Sydney |
+
+Example:
+
+```json
+{
+  "userId": "agent1",
+  "url": "https://example.com",
+  "preset": "japan",
+  "viewport": { "width": 1920, "height": 1080 }
+}
+```
+
+Tip: call `list_presets` to discover what presets the connected server supports (including any custom preset file configured server-side).
 
 ### Navigation
 | Tool | Description |
