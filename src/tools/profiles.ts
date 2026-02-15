@@ -74,7 +74,7 @@ export function registerProfileTools(server: McpServer, deps: ToolDeps): void {
         const userMismatch = profile.userId !== tracked.userId;
 
         // Import cookies into the session
-        await deps.client.importCookies(tracked.userId, JSON.stringify(profile.cookies));
+        await deps.client.importCookies(tracked.userId, profile.cookies);
 
         return okResult({
           profileId: profile.profileId,

@@ -24,7 +24,18 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           throw new AppError("API_KEY_REQUIRED", "CAMOFOX_API_KEY is required to import cookies");
         }
 
-        await deps.client.importCookies(parsed.userId, parsed.cookies);
+        let cookies: unknown;
+        try {
+          cookies = JSON.parse(parsed.cookies);
+        } catch {
+          throw new AppError("VALIDATION_ERROR", "cookies must be a JSON array");
+        }
+
+        if (!Array.isArray(cookies)) {
+          throw new AppError("VALIDATION_ERROR", "cookies must be a JSON array");
+        }
+
+        await deps.client.importCookies(parsed.userId, cookies);
         return okResult({ success: true });
       } catch (error) {
         return toErrorResult(error);

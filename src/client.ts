@@ -391,7 +391,7 @@ export class CamofoxClient {
     return Array.isArray(response) ? response : response.cookies;
   }
 
-  async importCookies(userId: string, cookies: string): Promise<void> {
+  async importCookies(userId: string, cookies: unknown[]): Promise<void> {
     await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
       method: "POST",
       body: JSON.stringify({ cookies }),
