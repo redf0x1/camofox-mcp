@@ -159,7 +159,7 @@ export class CamofoxClient {
       return await this.requestJson("/presets", { method: "GET" }, PresetsResponseSchema);
     } catch (error) {
       // The CamoFox API currently maps all 404s to TAB_NOT_FOUND. If /presets
-      // isn't supported by the upstream camofox-browser server, degrade
+      // isn't supported by the camofox-browser server (v2.0.0+), degrade
       // gracefully by returning an empty preset list.
       if (error instanceof AppError && error.code === "TAB_NOT_FOUND" && error.status === 404) {
         return { presets: {} };

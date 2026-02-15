@@ -15,7 +15,7 @@
 
 AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint detection, IP bans — the web fights back against automation.
 
-**CamoFox MCP** wraps the [CamoFox anti-detection browser](https://github.com/jo-inc/camofox-browser) as an MCP server, giving your AI agent:
+**CamoFox MCP** wraps the [CamoFox Browser Server](https://github.com/redf0x1/camofox-browser) as an MCP server, giving your AI agent:
 
 - 🛡️ **Anti-detection fingerprinting** — Each tab gets a unique, human-like browser fingerprint
 - ⚡ **Fast, token-efficient snapshots** — Accessibility tree snapshots use 90% fewer tokens than screenshots
@@ -53,9 +53,9 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 ### 1. Install CamoFox Browser
 
-Download from [CamoFox releases](https://github.com/jo-inc/camofox-browser/releases) and start:
+Download from [CamoFox Browser Server releases](https://github.com/redf0x1/camofox-browser/releases) (v2.0.0+) and start:
 
-If you want **per-session geo presets** (locale/timezone/geolocation/viewport), run a camofox-browser fork that supports `preset` on tab creation and exposes `GET /presets`.
+If you want **per-session geo presets** (locale/timezone/geolocation/viewport), ensure your camofox-browser server supports `preset` on tab creation and exposes `GET /presets` (v2.0.0+).
 
 ```bash
 ./camofox-browser   # Starts on port 9377
@@ -385,7 +385,7 @@ AI Agent (Claude, GPT, etc.)
 
 ## Anti-Detection Features
 
-CamoFox (via [Camoufox](https://github.com/jo-inc/camofox-browser)) provides:
+CamoFox (via [Camoufox](https://github.com/daijro/camoufox)) provides:
 
 - ✅ Unique browser fingerprint per tab
 - ✅ Human-like user agent rotation
@@ -395,6 +395,13 @@ CamoFox (via [Camoufox](https://github.com/jo-inc/camofox-browser)) provides:
 - ✅ Font enumeration protection
 - ✅ Navigator properties masking
 - ✅ Timezone/locale consistency
+
+## Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [CamoFox Browser Server](https://github.com/redf0x1/camofox-browser) | Anti-detection browser server (required) |
+| [Camoufox](https://github.com/daijro/camoufox) | Firefox fork with C++ fingerprint spoofing |
 
 ## Contributing
 
@@ -406,6 +413,6 @@ Contributions are welcome! Please open an issue or submit a PR.
 
 ## Acknowledgments
 
-- [CamoFox Browser](https://github.com/jo-inc/camofox-browser) — The anti-detection browser this MCP wraps
-- [Camoufox](https://camoufox.com/) — Firefox-based anti-detection browser engine
+- [CamoFox Browser Server](https://github.com/redf0x1/camofox-browser) — The anti-detection browser server this MCP wraps
+- [Camoufox](https://github.com/daijro/camoufox) — Firefox fork with C++ fingerprint spoofing
 - [Model Context Protocol](https://modelcontextprotocol.io/) — The protocol standard by Anthropic

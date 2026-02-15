@@ -1,7 +1,7 @@
 services:
   camofox-browser:
     # NOTE: As of 2026-02-14, the upstream repo docs do not reference a published container image.
-    # Build locally from https://github.com/jo-inc/camofox-browser and tag it as `camofox-browser:latest`,
+    # Build locally from https://github.com/redf0x1/camofox-browser and tag it as `camofox-browser:latest`,
     # or replace this with your own registry image.
     image: camofox-browser:latest
     ports:

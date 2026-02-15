@@ -3,7 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { okResult, toErrorResult } from "../errors.js";
 import type { ToolDeps } from "../server.js";
 
-// Tool: list_presets - Lists all available geo presets from the camofox-browser server
+// Tool: list_presets - Lists all available geo presets from the CamoFox Browser Server (camofox-browser v2.0.0+)
 export function registerPresetTools(server: McpServer, deps: ToolDeps): void {
   server.tool(
     "list_presets",
