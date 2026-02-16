@@ -1,9 +1,6 @@
 services:
   camofox-browser:
-    # NOTE: As of 2026-02-14, the upstream repo docs do not reference a published container image.
-    # Build locally from https://github.com/redf0x1/camofox-browser and tag it as `camofox-browser:latest`,
-    # or replace this with your own registry image.
-    image: camofox-browser:latest
+    image: ghcr.io/redf0x1/camofox-browser:latest
     ports:
       - "9377:9377"
     healthcheck:
@@ -22,8 +19,7 @@ services:
   #   docker compose run --rm -T camofox-mcp
   camofox-mcp:
     profiles: ["mcp"]
-    build: .
-    image: redf0x1/camofox-mcp:latest
+    image: ghcr.io/redf0x1/camofox-mcp:latest
     environment:
       - CAMOFOX_URL=http://camofox-browser:9377
     depends_on:

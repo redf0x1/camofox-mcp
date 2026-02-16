@@ -1,13 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 31 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 35 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
   },
   "version_detail": {
-    "version": "1.4.0",
+    "version": "1.6.2",
     "release_date": "2026-02-14",
     "is_stable": true
   },
@@ -15,7 +15,7 @@
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.4.0",
+      "version": "1.6.2",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -49,8 +49,11 @@
   "tools": [
     {"name": "batch_click", "description": "Click multiple elements sequentially. Continues on error (clicks are independent). Returns per-click results."},
     {"name": "camofox_close_session", "description": "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session."},
+    {"name": "camofox_evaluate_js", "description": "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured."},
     {"name": "camofox_hover", "description": "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector."},
     {"name": "camofox_press_key", "description": "Press a keyboard key. Use after type_text to submit forms (Enter), navigate between elements (Tab), move through suggestions (ArrowDown/ArrowUp), or dismiss dialogs (Escape). Common keys: Enter, Tab, Escape, ArrowDown, ArrowUp, Backspace, Space."},
+    {"name": "camofox_scroll_element", "description": "Scroll a specific container element (modal dialog, scrollable div, sidebar). Use when page-level scroll doesn't reach content inside modals or overflow containers. Returns scroll position metadata to track progress."},
+    {"name": "camofox_scroll_element_and_snapshot", "description": "Scroll a container element AND take a snapshot. Combines scroll_element + snapshot in one call. Perfect for incrementally loading lazy content in modals (e.g. Facebook group post comments). Returns both scroll position and page snapshot."},
     {"name": "camofox_wait_for", "description": "Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes."},
     {"name": "camofox_wait_for_text", "description": "Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading."},
     {"name": "click", "description": "Click an element. Provide either ref (from snapshot) or CSS selector. Use snapshot first to discover element refs."},
@@ -62,6 +65,7 @@
     {"name": "go_back", "description": "Navigate backward in browser history (Back button). Returns new page URL."},
     {"name": "go_forward", "description": "Navigate forward in browser history (Forward button). Returns new page URL."},
     {"name": "import_cookies", "description": "Import cookies for authenticated sessions. Provide cookies as JSON string array. Restores login sessions without re-auth. Requires userId."},
+    {"name": "list_presets", "description": "List all available geo presets supported by the CamoFox server. Presets include locale, timezone, and optional geolocation."},
     {"name": "save_profile", "description": "Export cookies from an active tab and save them to a named session profile on disk."},
     {"name": "load_profile", "description": "Load a named session profile from disk and import its cookies into a tab's browser session."},
     {"name": "list_profiles", "description": "List saved session profiles with basic metadata."},

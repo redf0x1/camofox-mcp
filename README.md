@@ -9,6 +9,19 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
 
+> **New to CamoFox?** Skip the docs — [paste this prompt](#3-verify-setup) into your AI agent and it’ll verify your setup end-to-end.
+
+**How it works (TL;DR)**
+
+```
+Your AI Agent ──(MCP)──> camofox-mcp ──(REST)──> camofox-browser ──> Camoufox (anti-detection Firefox)
+```
+
+CamoFox has **2 components** — you need both running:
+
+- `camofox-browser` is the headless browser server (anti-detection)
+- `camofox-mcp` is the MCP bridge your AI agent connects to
+
 ---
 
 ## Why CamoFox MCP?
@@ -40,7 +53,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 32 | 1 | 33 |
+| Tools | 35 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -49,23 +62,80 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 | Active maintenance | ✅ | ❌ (stale 8mo) | ✅ |
 | Press key support | ✅ | ❌ | ✅ |
 
+## Prerequisites
+
+- **Pick one:**
+  - **Docker** (recommended) — easiest “zero-to-hero” setup
+  - **Node.js 18+** ([download](https://nodejs.org/)) — needed for the `npx` setup
+- **CamoFox Browser Server** must be running (it is **not** a downloadable desktop binary — use Docker, `npx`, or build from source)
+- **An MCP-compatible client**: VS Code (Copilot), Cursor, Claude Desktop, or any MCP client
+
 ## Quick Start
 
-### 1. Install CamoFox Browser
+Pick ONE option below.
 
-Download from [CamoFox Browser Server releases](https://github.com/redf0x1/camofox-browser/releases) (v1.0.0+) and start:
+### Option A: Docker (Recommended — Easiest)
 
-If you want **per-session geo presets** (locale/timezone/geolocation/viewport), ensure your camofox-browser server supports `preset` on tab creation and exposes `GET /presets` (v1.0.0+).
+**1) Start CamoFox Browser**
 
 ```bash
-./camofox-browser   # Starts on port 9377
+docker run -d -p 9377:9377 --name camofox-browser ghcr.io/redf0x1/camofox-browser:latest
 ```
 
-### 2. Configure MCP Client
+**2) Verify it’s running**
 
-#### VS Code / Cursor (Recommended)
+```bash
+curl http://localhost:9377/health
+```
 
-Add to your MCP settings (`settings.json` or `.vscode/mcp.json`):
+**3) Add MCP config to your editor** (see configs below)
+
+**4) Paste the verification prompt into your AI agent** (see below)
+
+### Option B: npx (Quick — Needs Node.js 18+)
+
+**1) Start CamoFox Browser (keep this terminal open)**
+
+```bash
+npx camofox-browser@latest
+```
+
+**2) In another terminal, verify:**
+
+```bash
+curl http://localhost:9377/health
+```
+
+**3) Add MCP config to your editor** (see configs below)
+
+**4) Paste the verification prompt into your AI agent**
+
+### Option C: From Source (Developers)
+
+**1) Clone and start CamoFox Browser**
+
+```bash
+git clone https://github.com/redf0x1/camofox-browser.git
+cd camofox-browser && npm install && npm run build && npm start
+```
+
+**2) Clone and build CamoFox MCP**
+
+```bash
+git clone https://github.com/redf0x1/camofox-mcp.git
+cd camofox-mcp && npm install && npm run build
+```
+
+**3) Add MCP config** (see configs below — use `node` path instead of `npx`)
+
+**4) Paste the verification prompt**
+
+### MCP Client Configuration
+
+#### VS Code (Copilot)
+
+- File: `.vscode/mcp.json` (in your workspace root)
+- Create the file if it doesn't exist
 
 ```json
 {
@@ -84,7 +154,9 @@ Add to your MCP settings (`settings.json` or `.vscode/mcp.json`):
 
 #### Claude Desktop
 
-Add to `claude_desktop_config.json`:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -100,22 +172,18 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-#### From Source (Development)
+Note: Claude Desktop uses `"mcpServers"` not `"servers"`.
 
-```bash
-git clone https://github.com/redf0x1/camofox-mcp.git
-cd camofox-mcp
-npm install && npm run build
-```
+#### Cursor
 
-Then configure:
+- File: `~/.cursor/mcp.json`
+
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "camofox": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/path/to/camofox-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "camofox-mcp@latest"],
       "env": {
         "CAMOFOX_URL": "http://localhost:9377"
       }
@@ -124,20 +192,65 @@ Then configure:
 }
 ```
 
+#### From Source (use `node` instead of `npx`)
+
+```json
+{
+  "servers": {
+    "camofox": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/camofox-mcp/dist/index.js"],
+      "env": {
+        "CAMOFOX_URL": "http://localhost:9377"
+      }
+    }
+  }
+}
+```
+
+Note: This example is for VS Code. For Claude Desktop or Cursor, use `"mcpServers"` instead of `"servers"`.
+
+### 3. Verify Setup
+
+> After configuring your MCP client, restart your editor. Then paste this prompt into your AI agent:
+
+```text
+Verify my CamoFox MCP setup. Run these checks and report results:
+
+1) Call `server_status` — is the browser server connected?
+2) If connected: `create_tab` with url `https://example.com`
+3) `navigate_and_snapshot` on that tab (wait for text: "Example Domain")
+4) `list_profiles` to confirm profile storage is accessible
+5) `close_tab` for the test tab
+
+If any step fails, diagnose the issue and suggest a fix.
+Report: ✅ pass or ❌ fail for each step, plus overall status.
+```
+
+> **Prerequisites:** You must configure your MCP client first (Step 2 above). The AI agent can do everything else.
+
+**Manual verification (optional):**
+
+```bash
+curl http://localhost:9377/health
+# Expected: {"ok":true,"browserConnected":true}
+```
+
 ### Docker
 
 #### Quick Start with Docker
 
 ```bash
 # Standalone (connect to an existing CamoFox browser server running on the host)
-docker run -i --rm -e CAMOFOX_URL=http://host.docker.internal:9377 redf0x1/camofox-mcp
+docker run -i --rm -e CAMOFOX_URL=http://host.docker.internal:9377 ghcr.io/redf0x1/camofox-mcp:latest
 
 # Browser only (recommended): starts the CamoFox browser server in the background
 docker compose up -d
 
 # MCP (stdio): start the browser with compose, then launch the MCP container on-demand
 # Option A: plain docker (attach stdin; uses the compose network)
-docker run -i --rm --network=camofox-mcp_default -e CAMOFOX_URL=http://camofox-browser:9377 redf0x1/camofox-mcp
+docker run -i --rm --network=camofox-mcp_default -e CAMOFOX_URL=http://camofox-browser:9377 ghcr.io/redf0x1/camofox-mcp:latest
 
 # Option B: compose run (no TTY; attaches stdin/stdout for JSON-RPC)
 docker compose run --rm -T camofox-mcp
@@ -150,10 +263,12 @@ Your MCP client should launch the MCP container separately (using `docker run -i
 
 ```json
 {
-  "camofox": {
-    "command": "docker",
-    "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "redf0x1/camofox-mcp"],
-    "type": "stdio"
+  "servers": {
+    "camofox": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "ghcr.io/redf0x1/camofox-mcp:latest"]
+    }
   }
 }
 ```
@@ -165,7 +280,7 @@ Your MCP client should launch the MCP container separately (using `docker run -i
   "mcpServers": {
     "camofox": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "redf0x1/camofox-mcp"],
+      "args": ["run", "-i", "--rm", "-e", "CAMOFOX_URL=http://host.docker.internal:9377", "ghcr.io/redf0x1/camofox-mcp:latest"],
       "type": "stdio"
     }
   }
@@ -174,7 +289,7 @@ Your MCP client should launch the MCP container separately (using `docker run -i
 
 IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 
-## Tools (32)
+## Tools (35)
 
 ### Tab Management
 | Tool | Description |
@@ -241,8 +356,10 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `type_text` | Type text into input fields by ref or CSS selector |
 | `camofox_press_key` | Press keyboard keys (Enter, Tab, Escape, etc.) |
 | `scroll` | Scroll page up or down by pixel amount |
+| `camofox_scroll_element` | Scroll inside a container element (modal, sidebar, scrollable div) |
 | `camofox_hover` | Hover over an element to trigger tooltips, dropdowns, or hover states |
 | `camofox_wait_for` | Wait for page readiness after navigation or dynamic updates |
+| `camofox_evaluate_js` | Execute JavaScript in page context (requires API key) |
 
 ### Batch / Composite
 | Tool | Description |
@@ -251,6 +368,7 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `type_and_submit` | Type into a field and press a key (default: Enter) |
 | `navigate_and_snapshot` | Navigate to a URL, wait for readiness, and return a snapshot |
 | `scroll_and_snapshot` | Scroll then capture a fresh snapshot |
+| `camofox_scroll_element_and_snapshot` | Scroll inside a container element, then take a snapshot |
 | `batch_click` | Click multiple elements sequentially with per-click results |
 
 ### Observation
@@ -329,8 +447,66 @@ Mount a volume so profiles survive container restarts:
 docker run -i --rm \
   -e CAMOFOX_URL=http://host.docker.internal:9377 \
   -v "$HOME/.camofox-mcp/profiles:/root/.camofox-mcp/profiles" \
-  redf0x1/camofox-mcp
+  ghcr.io/redf0x1/camofox-mcp:latest
 ```
+
+## API Key Setup
+
+The API key is **optional**, but required for:
+
+- `import_cookies`
+- `camofox_evaluate_js`
+- Auto-save / auto-load session profiles (`CAMOFOX_AUTO_SAVE`) — because it imports cookies
+- Session profile features that **import cookies** (for example: `load_profile` and auto-load on `create_tab`)
+
+### How it works
+
+The key is a **shared secret** between **both** servers and must match exactly:
+
+```
+AI Agent -> (MCP tool call) -> CamoFox MCP (sends CAMOFOX_API_KEY) -> (HTTP) -> CamoFox Browser Server (validates key)
+```
+
+### Set the key on both servers
+
+**1) Start CamoFox Browser Server with a key** (exact flags may vary by camofox-browser version):
+
+```bash
+export CAMOFOX_API_KEY="your_shared_secret"
+./camofox-browser
+```
+
+Or (if supported by your camofox-browser build):
+
+```bash
+./camofox-browser --api-key "your_shared_secret"
+```
+
+**2) Configure your MCP client to pass the same key**:
+
+```json
+{
+  "servers": {
+    "camofox": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "camofox-mcp@latest"],
+      "env": {
+        "CAMOFOX_URL": "http://localhost:9377",
+        "CAMOFOX_API_KEY": "your_shared_secret"
+      }
+    }
+  }
+}
+```
+
+Note: This example is for VS Code. For Claude Desktop or Cursor, use `"mcpServers"` instead of `"servers"`.
+
+### What happens without an API key?
+
+Most browsing tools still work (tabs, navigation, snapshots, clicks, typing). Features that need authentication/cookie import will fail with an error.
+
+Warning: **key mismatch** between MCP and browser server -> cookie import/profile load/evaluate will return **"Forbidden"**.
 
 ## Configuration
 
@@ -343,6 +519,7 @@ docker run -i --rm \
 | `CAMOFOX_API_KEY` | — | API key (if CamoFox requires auth) |
 | `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | Directory to store persistent session profiles |
 | `CAMOFOX_AUTO_SAVE` | `true` | Auto-save on close + auto-load on create via `_auto_{userId}` |
+| `CAMOFOX_DEFAULT_USER_ID` | `default` | Default userId for new tabs when none specified |
 | `CAMOFOX_TAB_TTL_MS` | `1800000` | Tab TTL in milliseconds (30min). Set to 0 to disable auto-eviction |
 | `CAMOFOX_MAX_TABS` | `100` | Maximum tracked tabs |
 | `CAMOFOX_VISITED_URLS_LIMIT` | `50` | Max URLs to keep in tab history |
@@ -402,6 +579,29 @@ CamoFox (via [Camoufox](https://github.com/daijro/camoufox)) provides:
 |---------|-------------|
 | [CamoFox Browser Server](https://github.com/redf0x1/camofox-browser) | Anti-detection browser server (required) |
 | [Camoufox](https://github.com/daijro/camoufox) | Firefox fork with C++ fingerprint spoofing |
+
+## Troubleshooting
+
+**Quick troubleshoot (paste into your AI agent):**
+
+```text
+Something isn't working with my CamoFox setup. Please diagnose:
+
+1) Call `server_status` — check browser server connection
+2) If connected, try `create_tab` and navigate to any URL
+3) If that works, try `import_cookies` with a simple test cookie
+4) Report what's working and what's failing
+5) Suggest specific fixes for any issues found
+```
+
+- **Connection refused** (curl fails / `server_status` fails) -> CamoFox Browser Server is not running or `CAMOFOX_URL` is wrong. Verify with:
+  ```bash
+  curl http://localhost:9377/health
+  ```
+- **"Forbidden" on `import_cookies` / profile load / `camofox_evaluate_js`** -> API key mismatch. Ensure the **same** `CAMOFOX_API_KEY` is set on both servers.
+- **"API key required"** -> The tool you called needs `CAMOFOX_API_KEY` (see API Key Setup section).
+- **Session profiles not auto-restoring** -> Auto-load uses cookie import, which requires `CAMOFOX_API_KEY`. Also confirm `CAMOFOX_AUTO_SAVE` is not set to `false`.
+- **Not sure if setup is working?** -> Run the health check above, then ask your agent to call `server_status`, then try the Quick Start smoke test.
 
 ## Contributing
 

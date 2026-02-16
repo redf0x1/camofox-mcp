@@ -58,16 +58,16 @@ function makeTab(overrides: Partial<TabInfo> = {}): TabInfo {
 
 describe("profiles", () => {
   describe("withAutoTimeout", () => {
-    it("returns undefined on slow operation", async () => {
+    it("returns timeout result on slow operation", async () => {
       const slow = new Promise<string>((resolve) => setTimeout(() => resolve("ok"), 100));
       const result = await withAutoTimeout(slow, 10);
-      expect(result).toBeUndefined();
+      expect(result).toEqual({ ok: false, reason: "timeout" });
     });
 
-    it("returns value on fast operation", async () => {
+    it("returns ok result on fast operation", async () => {
       const fast = Promise.resolve("ok");
       const result = await withAutoTimeout(fast, 1000);
-      expect(result).toBe("ok");
+      expect(result).toEqual({ ok: true, value: "ok" });
     });
   });
 

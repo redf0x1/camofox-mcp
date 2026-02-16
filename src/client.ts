@@ -486,11 +486,25 @@ export class CamofoxClient {
   }
 
   async importCookies(userId: string, cookies: unknown[], tabId?: string): Promise<void> {
-    await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
-      method: "POST",
-      body: JSON.stringify({ cookies, ...(tabId && { tabId }) }),
-      requireApiKey: true
-    });
+    const MAX_COOKIES_PER_REQUEST = 500;
+
+    if (cookies.length <= MAX_COOKIES_PER_REQUEST) {
+      await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
+        method: "POST",
+        body: JSON.stringify({ cookies, ...(tabId && { tabId }) }),
+        requireApiKey: true
+      });
+      return;
+    }
+
+    for (let i = 0; i < cookies.length; i += MAX_COOKIES_PER_REQUEST) {
+      const batch = cookies.slice(i, i + MAX_COOKIES_PER_REQUEST);
+      await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
+        method: "POST",
+        body: JSON.stringify({ cookies: batch, ...(tabId && { tabId }) }),
+        requireApiKey: true
+      });
+    }
   }
 
   private async requestJson<T>(

@@ -6,15 +6,75 @@ import { AppError } from "./errors.js";
 
 const PROFILE_ID_REGEX = /^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,63}$/;
 
-export async function withAutoTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+export type AutoResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; reason: "timeout" }
+  | { ok: false; reason: "error"; error: unknown };
+
+export async function withAutoTimeout<T>(promise: Promise<T>, ms: number): Promise<AutoResult<T>> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
   try {
-    return await Promise.race([
-      promise,
-      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms))
-    ]);
-  } catch {
-    return undefined;
+    const timeoutResult = new Promise<AutoResult<T>>((resolve) => {
+      timeoutId = setTimeout(() => resolve({ ok: false, reason: "timeout" }), ms);
+    });
+
+    const settledPromise = Promise.resolve(promise)
+      .then((value) => ({ ok: true as const, value }))
+      .catch((error: unknown) => ({ ok: false as const, reason: "error" as const, error }));
+
+    return await Promise.race([settledPromise, timeoutResult]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
+}
+
+class Mutex {
+  private locked = false;
+
+  private readonly waiters: Array<() => void> = [];
+
+  async runExclusive<T>(fn: () => Promise<T>): Promise<T> {
+    await this.acquire();
+    try {
+      return await fn();
+    } finally {
+      this.release();
+    }
+  }
+
+  private acquire(): Promise<void> {
+    if (!this.locked) {
+      this.locked = true;
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      this.waiters.push(resolve);
+    });
+  }
+
+  private release(): void {
+    const next = this.waiters.shift();
+    if (next) {
+      next();
+      return;
+    }
+
+    this.locked = false;
+  }
+}
+
+const saveProfileMutexByPath = new Map<string, Mutex>();
+
+function getSaveProfileMutex(filePath: string): Mutex {
+  const existing = saveProfileMutexByPath.get(filePath);
+  if (existing) return existing;
+  const created = new Mutex();
+  saveProfileMutexByPath.set(filePath, created);
+  return created;
 }
 
 const ProfileCookieSchema = z
@@ -92,37 +152,40 @@ export async function saveProfile(
 
   const now = new Date().toISOString();
   const filePath = profilePath(dir, profileId);
-  const tmpPath = `${filePath}.tmp`;
 
-  // Try to load existing profile for createdAt
-  let createdAt = now;
-  try {
-    const existing = await loadProfile(dir, profileId);
-    createdAt = existing.metadata.createdAt;
-  } catch {
-    // New profile or corrupt existing — use current time
-  }
+  return await getSaveProfileMutex(filePath).runExclusive(async () => {
+    const tmpPath = `${filePath}.tmp`;
 
-  const profile: Profile = {
-    version: 1,
-    profileId,
-    userId,
-    cookies: cookiesParsed.data,
-    metadata: {
-      createdAt,
-      updatedAt: now,
-      lastUrl: options?.lastUrl,
-      description: options?.description,
-      cookieCount: cookiesParsed.data.length
+    // Try to load existing profile for createdAt
+    let createdAt = now;
+    try {
+      const existing = await loadProfile(dir, profileId);
+      createdAt = existing.metadata.createdAt;
+    } catch {
+      // New profile or corrupt existing — use current time
     }
-  };
 
-  // Atomic write: tmp → rename
-  const data = JSON.stringify(profile, null, 2);
-  await writeFile(tmpPath, data, { encoding: "utf-8", mode: 0o600 });
-  await rename(tmpPath, filePath);
+    const profile: Profile = {
+      version: 1,
+      profileId,
+      userId,
+      cookies: cookiesParsed.data,
+      metadata: {
+        createdAt,
+        updatedAt: now,
+        lastUrl: options?.lastUrl,
+        description: options?.description,
+        cookieCount: cookiesParsed.data.length
+      }
+    };
 
-  return profile;
+    // Atomic write: tmp → rename
+    const data = JSON.stringify(profile, null, 2);
+    await writeFile(tmpPath, data, { encoding: "utf-8", mode: 0o600 });
+    await rename(tmpPath, filePath);
+
+    return profile;
+  });
 }
 
 export async function loadProfile(dir: string, profileId: string): Promise<Profile> {

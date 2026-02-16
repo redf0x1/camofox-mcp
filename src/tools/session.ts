@@ -93,7 +93,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
 
         let autoSaved = false;
         // Auto-save before session close (best-effort; never blocks close)
-        if (deps.config.autoSave) {
+        if (deps.config.autoSave && deps.config.apiKey) {
           const saved = await withAutoTimeout(
             (async () => {
               const allTabs = getAllTrackedTabs().filter((t) => t.userId === tracked.userId);
@@ -116,7 +116,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
             })(),
             AUTO_PROFILE_TIMEOUT_MS
           );
-          autoSaved = saved ?? false;
+          autoSaved = saved.ok ? saved.value : false;
         }
 
         try {
