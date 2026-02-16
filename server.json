@@ -7,7 +7,7 @@
     "source": "github"
   },
   "version_detail": {
-    "version": "1.6.4",
+    "version": "1.7.0",
     "release_date": "2026-02-14",
     "is_stable": true
   },
@@ -15,7 +15,7 @@
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.6.4",
+      "version": "1.7.0",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -48,14 +48,14 @@
   ],
   "tools": [
     {"name": "batch_click", "description": "Click multiple elements sequentially. Continues on error (clicks are independent). Returns per-click results."},
-    {"name": "camofox_close_session", "description": "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session."},
+    {"name": "camofox_close_session", "description": "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Any tab ID from the session to identify the user"}}, "required": ["tabId"], "additionalProperties": false}},
     {"name": "camofox_evaluate_js", "description": "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured."},
-    {"name": "camofox_hover", "description": "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector."},
+    {"name": "camofox_hover", "description": "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "ref": {"type": "string", "description": "Element ref from snapshot (e.g. 'e5')"}, "selector": {"type": "string", "description": "CSS selector (e.g. '#menu-item', '.dropdown-trigger')"}}, "required": ["tabId"], "additionalProperties": false}},
     {"name": "camofox_press_key", "description": "Press a keyboard key. Use after type_text to submit forms (Enter), navigate between elements (Tab), move through suggestions (ArrowDown/ArrowUp), or dismiss dialogs (Escape). Common keys: Enter, Tab, Escape, ArrowDown, ArrowUp, Backspace, Space."},
     {"name": "camofox_scroll_element", "description": "Scroll a specific container element (modal dialog, scrollable div, sidebar). Use when page-level scroll doesn't reach content inside modals or overflow containers. Returns scroll position metadata to track progress."},
     {"name": "camofox_scroll_element_and_snapshot", "description": "Scroll a container element AND take a snapshot. Combines scroll_element + snapshot in one call. Perfect for incrementally loading lazy content in modals (e.g. Facebook group post comments). Returns both scroll position and page snapshot."},
-    {"name": "camofox_wait_for", "description": "Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes."},
-    {"name": "camofox_wait_for_text", "description": "Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading."},
+    {"name": "camofox_wait_for", "description": "Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "timeout": {"type": "number", "description": "Timeout in ms (default: 10000)"}, "waitForNetwork": {"type": "boolean", "description": "Wait for network idle (default: true)"}}, "required": ["tabId"], "additionalProperties": false}},
+    {"name": "camofox_wait_for_text", "description": "Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "text": {"type": "string", "description": "Text to wait for"}, "timeout": {"type": "number", "description": "Timeout in ms (default: 10000)"}}, "required": ["tabId", "text"], "additionalProperties": false}},
     {"name": "click", "description": "Click an element. Provide either ref (from snapshot) or CSS selector. Use snapshot first to discover element refs."},
     {"name": "close_tab", "description": "Close a browser tab and release resources. Always close tabs when done to free memory."},
     {"name": "create_tab", "description": "Create a new browser tab with anti-detection fingerprinting. Each tab gets a unique fingerprint. Optionally provide a URL and userId for session isolation. Returns the tab ID for subsequent operations."},

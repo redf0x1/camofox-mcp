@@ -607,6 +607,28 @@ Something isn't working with my CamoFox setup. Please diagnose:
 
 Contributions are welcome! Please open an issue or submit a PR.
 
+## Security
+
+### URL Navigation (SSRF Awareness)
+
+CamoFox MCP forwards URLs to the CamoFox Browser Server for navigation. This is core functionality — the browser visits whatever URL you provide.
+
+**In trusted environments** (local development, single-user): No special precautions needed.
+
+**In shared/cloud environments**: Be aware that the browser can access any URL reachable from its host, including internal network services. Consider:
+
+- Running the browser server in an isolated network (Docker network, VPC)
+- Using firewall rules to restrict outbound access from the browser container
+- Not exposing the MCP server to untrusted clients
+
+### API Key
+
+When `CAMOFOX_API_KEY` is set, all sensitive operations (cookie import/export, JavaScript evaluation) require authentication. Always set an API key in production environments.
+
+### Profile Storage
+
+Session profiles are stored locally at `~/.camofox-mcp/profiles/` with restricted file permissions (`0o600`). Profiles contain cookies which may include authentication tokens — treat them as sensitive data.
+
 ## License
 
 [MIT](LICENSE)

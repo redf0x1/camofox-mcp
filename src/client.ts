@@ -592,7 +592,7 @@ export class CamofoxClient {
         throw error;
       }
 
-      if (error instanceof DOMException && error.name === "AbortError") {
+      if (error instanceof Error && error.name === "AbortError") {
         throw new AppError("TIMEOUT", `CamoFox API request timed out after ${this.timeout}ms`);
       }
 

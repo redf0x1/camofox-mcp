@@ -80,16 +80,16 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
     "camofox_close_session",
     "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.",
     {
-      tab_id: z.string().describe("Any tab ID from the session to identify the user")
+      tabId: z.string().describe("Any tab ID from the session to identify the user")
     },
     async (input: unknown) => {
       try {
         const parsed = z
           .object({
-            tab_id: z.string().describe("Any tab ID from the session to identify the user")
+            tabId: z.string().describe("Any tab ID from the session to identify the user")
           })
           .parse(input);
-        const tracked = getTrackedTab(parsed.tab_id);
+        const tracked = getTrackedTab(parsed.tabId);
 
         let autoSaved = false;
         // Auto-save before session close (best-effort; never blocks close)
@@ -97,7 +97,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           const saved = await withAutoTimeout(
             (async () => {
               const allTabs = getAllTrackedTabs().filter((t) => t.userId === tracked.userId);
-              const tabForExport = allTabs.find((t) => t.tabId === parsed.tab_id) ?? allTabs[0];
+              const tabForExport = allTabs.find((t) => t.tabId === parsed.tabId) ?? allTabs[0];
               if (!tabForExport) {
                 return false;
               }
