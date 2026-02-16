@@ -13,6 +13,7 @@ import { registerProfileTools } from "./tools/profiles.js";
 import { registerSearchTools } from "./tools/search.js";
 import { registerSessionTools } from "./tools/session.js";
 import { registerTabsTools } from "./tools/tabs.js";
+import { registerPrompts } from "./prompts.js";
 
 const require = createRequire(import.meta.url);
 const pkg: { version: string } = require("../package.json");
@@ -43,6 +44,8 @@ export function createServer(config: Config): { server: McpServer; client: Camof
   registerBatchTools(server, deps);
   registerProfileTools(server, deps);
   registerPresetTools(server, deps);
+
+  registerPrompts(server, deps);
 
   return { server, client };
 }
