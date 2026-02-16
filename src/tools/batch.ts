@@ -236,6 +236,61 @@ export function registerBatchTools(server: McpServer, deps: ToolDeps): void {
   );
 
   server.tool(
+    "camofox_scroll_element_and_snapshot",
+    "Scroll a container element AND take a snapshot. Combines scroll_element + snapshot in one call. Perfect for incrementally loading lazy content in modals (e.g. Facebook group post comments). Returns both scroll position and page snapshot.",
+    {
+      tabId: z.string().min(1).describe("Tab ID"),
+      selector: z.string().min(1).optional().describe("CSS selector for scrollable container"),
+      ref: z.string().min(1).optional().describe("Element ref from snapshot"),
+      deltaY: z.number().default(300).describe("Scroll delta"),
+      waitMs: z.number().nonnegative().optional().default(500).describe("Wait before snapshot (ms)")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tabId: z.string().min(1).describe("Tab ID"),
+            selector: z.string().min(1).optional().describe("CSS selector for scrollable container"),
+            ref: z.string().min(1).optional().describe("Element ref from snapshot"),
+            deltaY: z.number().default(300).describe("Scroll delta"),
+            waitMs: z.number().nonnegative().optional().default(500).describe("Wait before snapshot (ms)")
+          })
+          .refine((data) => Boolean(data.ref || data.selector), {
+            message: "Either 'ref' or 'selector' is required"
+          })
+          .parse(input);
+
+        const tracked = getTrackedTab(parsed.tabId);
+        const scrolled = await deps.client.scrollElement(parsed.tabId, {
+          selector: parsed.selector,
+          ref: parsed.ref,
+          deltaY: parsed.deltaY
+        }, tracked.userId);
+
+        if (parsed.waitMs > 0) {
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve, parsed.waitMs);
+          });
+        }
+
+        const snap = await deps.client.snapshot(parsed.tabId, tracked.userId);
+        incrementToolCall(parsed.tabId);
+        updateTabUrl(parsed.tabId, snap.url);
+        updateRefsCount(parsed.tabId, snap.refsCount);
+
+        return okResult({
+          ok: scrolled.ok,
+          scrollPosition: scrolled.scrollPosition,
+          snapshot: snap.snapshot,
+          refsCount: snap.refsCount
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
+
+  server.tool(
     "batch_click",
     "Click multiple elements sequentially. Continues on error (clicks are independent). Returns per-click results.",
     {

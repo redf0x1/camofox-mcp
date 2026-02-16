@@ -101,6 +101,110 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
   );
 
   server.tool(
+    "camofox_scroll_element",
+    "Scroll a specific container element (modal dialog, scrollable div, sidebar). Use when page-level scroll doesn't reach content inside modals or overflow containers. Returns scroll position metadata to track progress.",
+    {
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      selector: z.string().min(1).optional().describe("CSS selector for scrollable container (e.g. '[role=dialog]', '.modal-body')"),
+      ref: z.string().min(1).optional().describe("Element ref from snapshot (e.g. 'e5')"),
+      deltaY: z.number().default(300).describe("Vertical scroll pixels (positive=down, negative=up)"),
+      deltaX: z.number().default(0).describe("Horizontal scroll pixels")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tabId: z.string().min(1).describe("Tab ID from create_tab"),
+            selector: z.string().min(1).optional().describe("CSS selector for scrollable container (e.g. '[role=dialog]', '.modal-body')"),
+            ref: z.string().min(1).optional().describe("Element ref from snapshot (e.g. 'e5')"),
+            deltaY: z.number().default(300).describe("Vertical scroll pixels (positive=down, negative=up)"),
+            deltaX: z.number().default(0).describe("Horizontal scroll pixels")
+          })
+          .refine((data) => Boolean(data.ref || data.selector), {
+            message: "Either 'ref' or 'selector' is required"
+          })
+          .parse(input);
+
+        const tracked = getTrackedTab(parsed.tabId);
+        const result = await deps.client.scrollElement(parsed.tabId, {
+          selector: parsed.selector,
+          ref: parsed.ref,
+          deltaX: parsed.deltaX,
+          deltaY: parsed.deltaY
+        }, tracked.userId);
+        incrementToolCall(parsed.tabId);
+
+        return okResult({
+          ok: result.ok,
+          scrollPosition: result.scrollPosition
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
+
+  server.tool(
+    "camofox_evaluate_js",
+    "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured.",
+    {
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      expression: z.string().min(1).describe(
+        "JavaScript expression to evaluate (e.g. 'document.title', 'document.querySelectorAll(\"img\").length', 'document.querySelector(\".modal\").scrollHeight')"
+      ),
+      timeout: z.number().int().positive().max(30000).optional().default(5000).describe("Execution timeout in ms (max 30000)")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            tabId: z.string().min(1).describe("Tab ID from create_tab"),
+            expression: z.string().min(1).describe(
+              "JavaScript expression to evaluate (e.g. 'document.title', 'document.querySelectorAll(\"img\").length', 'document.querySelector(\".modal\").scrollHeight')"
+            ),
+            timeout: z.number().int().min(100).max(30000).optional().default(5000).describe("Execution timeout in ms (max 30000)")
+          })
+          .parse(input);
+
+        const tracked = getTrackedTab(parsed.tabId);
+        const result = await deps.client.evaluate(parsed.tabId, parsed.expression, tracked.userId, parsed.timeout);
+        incrementToolCall(parsed.tabId);
+
+        if (result.ok) {
+          const inferredType =
+            result.resultType ??
+            (result.result === null
+              ? "null"
+              : Array.isArray(result.result)
+                ? "array"
+                : typeof result.result);
+
+          return okResult({
+            ok: true,
+            result: result.result,
+            resultType: inferredType,
+            truncated: result.truncated ?? false
+          });
+        }
+
+        const errorType = result.errorType ?? "Error";
+        const isTimeout = /timeout/i.test(errorType) || /timeout/i.test(result.error ?? "");
+        const message = isTimeout
+          ? `Evaluation timed out after ${parsed.timeout}ms`
+          : (result.error ?? "JavaScript evaluation failed");
+
+        return okResult({
+          ok: false,
+          error: message,
+          errorType
+        });
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
+
+  server.tool(
     "camofox_hover",
     "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector.",
     {

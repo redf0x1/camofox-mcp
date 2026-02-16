@@ -114,6 +114,35 @@ const WaitForReadyResponseSchema = z.object({
   ready: z.boolean()
 });
 
+const ScrollPositionSchema = z
+  .object({
+    scrollTop: z.number(),
+    scrollLeft: z.number(),
+    scrollHeight: z.number(),
+    clientHeight: z.number(),
+    scrollWidth: z.number(),
+    clientWidth: z.number()
+  })
+  .passthrough();
+
+const ScrollElementResponseSchema = z
+  .object({
+    ok: z.boolean(),
+    scrollPosition: ScrollPositionSchema
+  })
+  .passthrough();
+
+const EvaluateResponseSchema = z
+  .object({
+    ok: z.boolean(),
+    result: z.unknown().optional(),
+    resultType: z.string().optional(),
+    truncated: z.boolean().optional(),
+    error: z.string().optional(),
+    errorType: z.string().optional()
+  })
+  .passthrough();
+
 const CookieExportSchema = z
   .object({
     name: z.string(),
@@ -274,6 +303,71 @@ export class CamofoxClient {
       method: "POST",
       body: JSON.stringify({ direction, amount, userId })
     });
+  }
+
+  async scrollElement(
+    tabId: string,
+    params: {
+      selector?: string;
+      ref?: string;
+      deltaX?: number;
+      deltaY?: number;
+      scrollTo?: { top?: number; left?: number };
+    },
+    userId: string
+  ): Promise<{
+    ok: boolean;
+    scrollPosition: {
+      scrollTop: number;
+      scrollLeft: number;
+      scrollHeight: number;
+      clientHeight: number;
+      scrollWidth: number;
+      clientWidth: number;
+    };
+  }> {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/scroll-element`, {
+      method: "POST",
+      body: JSON.stringify({ ...params, userId })
+    }, ScrollElementResponseSchema);
+
+    return {
+      ok: response.ok,
+      scrollPosition: response.scrollPosition
+    };
+  }
+
+  async evaluate(
+    tabId: string,
+    expression: string,
+    userId: string,
+    timeout?: number
+  ): Promise<{
+    ok: boolean;
+    result?: unknown;
+    resultType?: string;
+    truncated?: boolean;
+    error?: string;
+    errorType?: string;
+  }> {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/evaluate`, {
+      method: "POST",
+      body: JSON.stringify({
+        expression,
+        userId,
+        ...(timeout !== undefined ? { timeout } : {})
+      }),
+      requireApiKey: true
+    }, EvaluateResponseSchema);
+
+    return {
+      ok: response.ok,
+      result: response.result,
+      resultType: response.resultType,
+      truncated: response.truncated,
+      error: response.error,
+      errorType: response.errorType
+    };
   }
 
   async waitForReady(tabId: string, userId: string, timeout?: number, waitForNetwork?: boolean): Promise<{ ready: boolean }> {
