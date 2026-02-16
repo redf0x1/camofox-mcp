@@ -130,6 +130,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
         const tracked = getTrackedTab(parsed.tabId);
 
         let autoSaved = false;
+        let autoSaveFailure: string | undefined;
         // Auto-save profile before closing (best-effort; never blocks close)
         if (deps.config.autoSave && deps.config.apiKey) {
           const saved = await withAutoTimeout(
@@ -148,6 +149,14 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
             AUTO_PROFILE_TIMEOUT_MS
           );
           autoSaved = saved.ok ? saved.value : false;
+          if (!saved.ok) {
+            autoSaveFailure =
+              saved.reason === "timeout"
+                ? "timeout"
+                : saved.error instanceof Error
+                  ? saved.error.message
+                  : String(saved.error);
+          }
         }
 
         try {
@@ -155,7 +164,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
         } finally {
           removeTrackedTab(parsed.tabId);
         }
-        return okResult({ success: true, tabId: parsed.tabId, autoSaved });
+        return okResult({ success: true, tabId: parsed.tabId, autoSaved, autoSaveFailure });
       } catch (error) {
         return toErrorResult(error);
       }
