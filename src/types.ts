@@ -9,7 +9,7 @@ export interface Config {
 
 export interface HealthResponse {
   ok: boolean;
-  running: boolean;
+  running?: boolean;
   browserConnected: boolean;
   version?: string;
 }

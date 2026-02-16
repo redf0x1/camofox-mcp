@@ -11,7 +11,7 @@ export function registerHealthTools(server: McpServer, deps: ToolDeps): void {
       const activeTabCount = listTrackedTabs().length;
       return okResult({
         ok: health.ok,
-        running: health.running,
+        running: health.running ?? health.browserConnected ?? false,
         browserConnected: health.browserConnected,
         version: health.version ?? "unknown",
         activeTabCount

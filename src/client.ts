@@ -29,7 +29,7 @@ const ApiErrorPayloadSchema = z
 
 const HealthResponseSchema = z.object({
   ok: z.boolean(),
-  running: z.boolean(),
+  running: z.boolean().optional(),
   browserConnected: z.boolean(),
   version: z.string().optional()
 });
