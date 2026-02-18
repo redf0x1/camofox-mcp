@@ -95,23 +95,34 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
 
         // Auto-load profile if enabled
         // Note: This behavior is covered via E2E tests (requires a real server/client). Unit tests cover disk I/O + timeout helper.
+        let autoLoaded = false;
         if (deps.config.autoSave) {
           const autoProfileId = `_auto_${tracked.userId}`;
-          await withAutoTimeout(
+          const autoLoadResult = await withAutoTimeout(
             (async () => {
               const profile = await loadProfile(deps.config.profilesDir, autoProfileId);
               if (profile.userId !== tracked.userId) {
-                return;
+                return false;
               }
-              if (profile.cookies.length > 0) {
-                await deps.client.importCookies(tracked.userId, profile.cookies, tab.tabId);
+              if (profile.cookies.length <= 0) {
+                return false;
               }
+
+              await deps.client.importCookies(tracked.userId, profile.cookies, tab.tabId);
+              return true;
             })(),
             AUTO_PROFILE_TIMEOUT_MS
           );
+
+          autoLoaded = autoLoadResult.ok && autoLoadResult.value === true;
+
+          // If cookies were loaded and a URL was provided, re-navigate so the page applies the new cookie jar.
+          if (autoLoaded && parsed.url) {
+            await deps.client.navigate(tab.tabId, parsed.url, tracked.userId);
+          }
         }
 
-        return okResult({ tabId: tab.tabId, url: tab.url });
+        return okResult({ tabId: tab.tabId, url: tab.url, userId, sessionKey, preset: parsed.preset, autoLoaded });
       } catch (error) {
         return toErrorResult(error);
       }

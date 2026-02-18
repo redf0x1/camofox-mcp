@@ -70,6 +70,7 @@ describe("tools/tabs", () => {
       client: {
         createTab: vi.fn(),
         closeTab: vi.fn(),
+        navigate: vi.fn(),
         exportCookies: vi.fn(),
         importCookies: vi.fn()
       } as unknown as ToolDeps["client"],
@@ -110,11 +111,12 @@ describe("tools/tabs", () => {
 
       expect(result.isError).toBeFalsy();
       const payload = parseToolTextJson(result);
-      expect(payload).toMatchObject({ tabId: "tab-basic", url: "http://example.com" });
+      expect(payload).toMatchObject({ tabId: "tab-basic", url: "http://example.com", autoLoaded: false });
 
       expect(loadProfile).not.toHaveBeenCalled();
       expect(withAutoTimeout).not.toHaveBeenCalled();
       expect(deps.client.importCookies).not.toHaveBeenCalled();
+      expect(deps.client.navigate).not.toHaveBeenCalled();
 
       const tracked = getTrackedTab("tab-basic");
       expect(tracked.userId).toBe("default");
@@ -142,7 +144,7 @@ describe("tools/tabs", () => {
 
       expect(result.isError).toBeFalsy();
       const payload = parseToolTextJson(result);
-      expect(payload).toMatchObject({ tabId: "tab-auto" });
+      expect(payload).toMatchObject({ tabId: "tab-auto", autoLoaded: true });
 
       expect(loadProfile).toHaveBeenCalledTimes(1);
       expect(loadProfile).toHaveBeenCalledWith(deps.config.profilesDir, "_auto_default");
@@ -154,6 +156,9 @@ describe("tools/tabs", () => {
         [{ name: "sid", value: "1", domain: "example.com", path: "/" }],
         "tab-auto"
       );
+
+      expect(deps.client.navigate).toHaveBeenCalledTimes(1);
+      expect(deps.client.navigate).toHaveBeenCalledWith("tab-auto", "http://example.com", "default");
 
       expect(getTrackedTab("tab-auto").userId).toBe("default");
     });
@@ -173,10 +178,11 @@ describe("tools/tabs", () => {
 
       expect(result.isError).toBeFalsy();
       const payload = parseToolTextJson(result);
-      expect(payload).toMatchObject({ tabId: "tab-load-fails" });
+      expect(payload).toMatchObject({ tabId: "tab-load-fails", autoLoaded: false });
 
       expect(loadProfile).toHaveBeenCalledTimes(1);
       expect(deps.client.importCookies).not.toHaveBeenCalled();
+      expect(deps.client.navigate).not.toHaveBeenCalled();
       expect(getTrackedTab("tab-load-fails").userId).toBe("default");
     });
 
@@ -196,11 +202,12 @@ describe("tools/tabs", () => {
 
       expect(result.isError).toBeFalsy();
       const payload = parseToolTextJson(result);
-      expect(payload).toMatchObject({ tabId: "tab-timeout" });
+      expect(payload).toMatchObject({ tabId: "tab-timeout", autoLoaded: false });
 
       expect(loadProfile).toHaveBeenCalledTimes(1);
       expect(withAutoTimeout).toHaveBeenCalledTimes(1);
       expect(deps.client.importCookies).not.toHaveBeenCalled();
+      expect(deps.client.navigate).not.toHaveBeenCalled();
     });
   });
 
