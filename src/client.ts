@@ -356,8 +356,7 @@ export class CamofoxClient {
         expression,
         userId,
         ...(timeout !== undefined ? { timeout } : {})
-      }),
-      requireApiKey: true
+      })
     }, EvaluateResponseSchema);
 
     return {
@@ -491,8 +490,7 @@ export class CamofoxClient {
     if (cookies.length <= MAX_COOKIES_PER_REQUEST) {
       await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
         method: "POST",
-        body: JSON.stringify({ cookies, ...(tabId && { tabId }) }),
-        requireApiKey: true
+        body: JSON.stringify({ cookies, ...(tabId && { tabId }) })
       });
       return;
     }
@@ -501,15 +499,14 @@ export class CamofoxClient {
       const batch = cookies.slice(i, i + MAX_COOKIES_PER_REQUEST);
       await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
         method: "POST",
-        body: JSON.stringify({ cookies: batch, ...(tabId && { tabId }) }),
-        requireApiKey: true
+        body: JSON.stringify({ cookies: batch, ...(tabId && { tabId }) })
       });
     }
   }
 
   private async requestJson<T>(
     path: string,
-    init: RequestInit & { requireApiKey?: boolean },
+    init: RequestInit,
     schema: z.ZodType<T>
   ): Promise<T> {
     const response = await this.request(path, init);
@@ -543,24 +540,20 @@ export class CamofoxClient {
     return parsed.data;
   }
 
-  private async requestBinary(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<ArrayBuffer> {
+  private async requestBinary(path: string, init: RequestInit): Promise<ArrayBuffer> {
     const response = await this.request(path, init);
     return response.arrayBuffer();
   }
 
-  private async requestNoContent(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<void> {
+  private async requestNoContent(path: string, init: RequestInit): Promise<void> {
     await this.request(path, init);
   }
 
-  private async request(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<Response> {
+  private async request(path: string, init: RequestInit): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      if (init.requireApiKey && !this.apiKey) {
-        throw new AppError("API_KEY_REQUIRED", "CAMOFOX_API_KEY is required for this operation");
-      }
-
       const headers = new Headers();
       headers.set("content-type", "application/json");
 
@@ -623,6 +616,14 @@ export class CamofoxClient {
       } catch {
         message = rawBody;
       }
+    }
+
+    if (response.status === 403) {
+      return new AppError(
+        "API_KEY_REQUIRED",
+        `CamoFox server requires authentication. Set CAMOFOX_API_KEY environment variable. Details: ${message}`,
+        403
+      );
     }
 
     if (response.status === 404) {

@@ -93,9 +93,9 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
 
         trackTab(tracked);
 
-        // Auto-load profile if enabled (requires API key for importCookies)
+        // Auto-load profile if enabled
         // Note: This behavior is covered via E2E tests (requires a real server/client). Unit tests cover disk I/O + timeout helper.
-        if (deps.config.autoSave && deps.config.apiKey) {
+        if (deps.config.autoSave) {
           const autoProfileId = `_auto_${tracked.userId}`;
           await withAutoTimeout(
             (async () => {
@@ -132,7 +132,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
         let autoSaved = false;
         let autoSaveFailure: string | undefined;
         // Auto-save profile before closing (best-effort; never blocks close)
-        if (deps.config.autoSave && deps.config.apiKey) {
+        if (deps.config.autoSave) {
           const saved = await withAutoTimeout(
             (async () => {
               const cookies = await deps.client.exportCookies(parsed.tabId, tracked.userId);

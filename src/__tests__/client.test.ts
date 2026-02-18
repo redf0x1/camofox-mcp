@@ -98,30 +98,32 @@ describe("client", () => {
       await client.healthCheck();
       expect.fail("Expected healthCheck() to throw");
     } catch (err) {
-      const appError = expectAppErrorWithCode(err, "INTERNAL_ERROR");
+      const appError = expectAppErrorWithCode(err, "API_KEY_REQUIRED");
       expect(appError.status).toBe(403);
-      expect(appError.message).toBe("Forbidden");
+      expect(appError.message).toContain("CAMOFOX_API_KEY");
     }
   });
 
-  it("API key gating: requireApiKey throws API_KEY_REQUIRED when no apiKey configured", async () => {
+  it("requests proceed without API key (no pre-flight guard)", async () => {
     const client = new CamofoxClient(makeConfig({ apiKey: undefined }));
 
     const fetchMock = vi.fn((async () => {
-      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      return new Response(JSON.stringify({ ok: true, result: 2 }), { status: 200 });
     }) as typeof fetch);
     globalThis.fetch = fetchMock;
 
-    try {
-      await client.evaluate("tab-1", "1 + 1", "user-1");
-      expect.fail("Expected evaluate() to throw when apiKey is missing");
-    } catch (err) {
-      expectAppErrorWithCode(err, "API_KEY_REQUIRED");
-      expect(fetchMock).not.toHaveBeenCalled();
-    }
+    const result = await client.evaluate("tab-1", "1 + 1", "user-1");
+    expect(result.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Verify no auth headers sent
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = new Headers(init?.headers);
+    expect(headers.get("x-api-key")).toBeNull();
+    expect(headers.get("authorization")).toBeNull();
   });
 
-  it("API key gating: requireApiKey works when apiKey is provided (and sends headers)", async () => {
+  it("auth headers are sent when apiKey is configured", async () => {
     const client = new CamofoxClient(makeConfig({ apiKey: "test-key" }));
 
     const fetchMock = vi.fn((async (_url: string, init?: RequestInit) => {

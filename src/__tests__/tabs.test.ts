@@ -99,6 +99,7 @@ describe("tools/tabs", () => {
 
   describe("create_tab", () => {
     it("basic create without auto-load (no apiKey)", async () => {
+      deps.config.autoSave = false;
       vi.mocked(deps.client.createTab).mockResolvedValue({ tabId: "tab-basic", url: "http://example.com" });
 
       const { server, getHandler } = makeServerCapture();
@@ -205,6 +206,7 @@ describe("tools/tabs", () => {
 
   describe("close_tab", () => {
     it("basic close without auto-save (no apiKey)", async () => {
+      deps.config.autoSave = false;
       trackTab(makeTab("tab-close-basic", { userId: "user-1" }));
 
       vi.mocked(deps.client.closeTab).mockResolvedValue(undefined);

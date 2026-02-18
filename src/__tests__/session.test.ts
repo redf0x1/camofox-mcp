@@ -95,6 +95,7 @@ describe("tools/session camofox_close_session", () => {
   });
 
   it("close session without auto-save", async () => {
+    deps.config.autoSave = false;
     trackTab(makeTab("tab-sess-1", { userId: "user-1", url: "http://a.com" }));
     trackTab(makeTab("tab-sess-2", { userId: "user-1", url: "http://b.com" }));
 

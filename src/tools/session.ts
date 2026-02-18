@@ -27,10 +27,6 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           })
           .parse(input);
 
-        if (!deps.config.apiKey) {
-          throw new AppError("API_KEY_REQUIRED", "CAMOFOX_API_KEY is required to import cookies");
-        }
-
         let cookies: unknown;
         try {
           cookies = JSON.parse(parsed.cookies);
@@ -93,7 +89,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
 
         let autoSaved = false;
         // Auto-save before session close (best-effort; never blocks close)
-        if (deps.config.autoSave && deps.config.apiKey) {
+        if (deps.config.autoSave) {
           const saved = await withAutoTimeout(
             (async () => {
               const allTabs = getAllTrackedTabs().filter((t) => t.userId === tracked.userId);
