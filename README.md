@@ -359,7 +359,7 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `camofox_scroll_element` | Scroll inside a container element (modal, sidebar, scrollable div) |
 | `camofox_hover` | Hover over an element to trigger tooltips, dropdowns, or hover states |
 | `camofox_wait_for` | Wait for page readiness after navigation or dynamic updates |
-| `camofox_evaluate_js` | Execute JavaScript in page context (requires API key) |
+| `camofox_evaluate_js` | Execute JavaScript in page context (may require API key) |
 
 ### Batch / Composite
 | Tool | Description |
@@ -427,7 +427,7 @@ By default, CamoFox MCP will persist sessions automatically:
 - On `close_tab` and `camofox_close_session`, cookies are exported and saved to `_auto_{userId}` (best-effort; 5-second timeout).
 - On `create_tab`, if `_auto_{userId}` exists, it is loaded automatically (best-effort; 5-second timeout).
 
-Note: auto-load requires `CAMOFOX_API_KEY` because importing cookies requires an API key.
+Note: auto-load imports cookies, which may require `CAMOFOX_API_KEY` if the CamoFox browser server enforces authentication. For local setups, auto-load works without a key.
 
 ### Example flow
 
@@ -452,12 +452,16 @@ docker run -i --rm \
 
 ## API Key Setup
 
-The API key is **optional**, but required for:
+The API key is **optional**. All 35 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
+
+If your CamoFox browser server **has authentication enabled**, these tools need a matching key:
 
 - `import_cookies`
 - `camofox_evaluate_js`
-- Auto-save / auto-load session profiles (`CAMOFOX_AUTO_SAVE`) — because it imports cookies
-- Session profile features that **import cookies** (for example: `load_profile` and auto-load on `create_tab`)
+- `load_profile` (imports cookies)
+- Auto-save / auto-load session profiles (imports cookies on `create_tab`)
+
+Without a matching key, these tools return a clear "API key required" error with setup instructions.
 
 ### How it works
 
@@ -504,9 +508,11 @@ Note: This example is for VS Code. For Claude Desktop or Cursor, use `"mcpServer
 
 ### What happens without an API key?
 
-Most browsing tools still work (tabs, navigation, snapshots, clicks, typing). Features that need authentication/cookie import will fail with an error.
+**All tools work** when the CamoFox browser server doesn't require authentication (default for local/Docker setups).
 
-Warning: **key mismatch** between MCP and browser server -> cookie import/profile load/evaluate will return **"Forbidden"**.
+If the browser server **does** enforce auth and no key is set, cookie import, profile load, and JS evaluation return a clear error: "CamoFox server requires authentication. Set CAMOFOX_API_KEY environment variable."
+
+⚠️ **Key mismatch** between MCP and browser server → affected tools return **"Forbidden"**. Ensure the **same** key is set on both servers.
 
 ## Configuration
 
@@ -516,7 +522,7 @@ Warning: **key mismatch** between MCP and browser server -> cookie import/profil
 |----------|---------|-------------|
 | `CAMOFOX_URL` | `http://localhost:9377` | CamoFox server URL |
 | `CAMOFOX_TIMEOUT` | `30000` | Request timeout in ms |
-| `CAMOFOX_API_KEY` | — | API key (if CamoFox requires auth) |
+| `CAMOFOX_API_KEY` | — | Shared secret for authenticated operations. Only needed if the CamoFox browser server enforces auth |
 | `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | Directory to store persistent session profiles |
 | `CAMOFOX_AUTO_SAVE` | `true` | Auto-save on close + auto-load on create via `_auto_{userId}` |
 | `CAMOFOX_DEFAULT_USER_ID` | `default` | Default userId for new tabs when none specified |
@@ -599,8 +605,8 @@ Something isn't working with my CamoFox setup. Please diagnose:
   curl http://localhost:9377/health
   ```
 - **"Forbidden" on `import_cookies` / profile load / `camofox_evaluate_js`** -> API key mismatch. Ensure the **same** `CAMOFOX_API_KEY` is set on both servers.
-- **"API key required"** -> The tool you called needs `CAMOFOX_API_KEY` (see API Key Setup section).
-- **Session profiles not auto-restoring** -> Auto-load uses cookie import, which requires `CAMOFOX_API_KEY`. Also confirm `CAMOFOX_AUTO_SAVE` is not set to `false`.
+- **"API key required"** -> The CamoFox browser server requires authentication. Set `CAMOFOX_API_KEY` on both servers (see API Key Setup).
+- **Session profiles not auto-restoring** -> Auto-load imports cookies, which requires `CAMOFOX_API_KEY` if the browser server enforces auth. Also confirm `CAMOFOX_AUTO_SAVE` is not set to `false`.
 - **Not sure if setup is working?** -> Run the health check above, then ask your agent to call `server_status`, then try the Quick Start smoke test.
 
 ## Contributing
