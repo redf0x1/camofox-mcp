@@ -15,9 +15,11 @@ export function registerExtractionTools(server: McpServer, deps: ToolDeps): void
       selector: z.string().min(1).optional().describe("CSS selector for target container (e.g., '.message:nth-child(3)')"),
       ref: z.string().min(1).optional().describe("Element ref from snapshot (e.g., 'e12'). Either selector or ref required."),
       types: z
-        .array(z.string().min(1))
+        .array(z.enum(['images', 'links', 'media', 'documents', 'image', 'link', 'document']))
         .optional()
-        .describe("Resource types to extract: 'images', 'links', 'media', 'documents'. Default: all."),
+        .describe(
+          "Resource types to extract: 'images', 'links', 'media', 'documents' (singular forms also accepted). Default: all."
+        ),
       extensions: z.array(z.string().min(1)).optional().describe("Filter by file extensions: ['pdf', 'jpg', 'png']"),
       resolveBlobs: z.boolean().optional().default(false).describe("Resolve blob: URLs to data: URIs"),
       triggerLazyLoad: z.boolean().optional().default(false).describe("Scroll to trigger lazy-loaded images before extraction"),
@@ -32,9 +34,11 @@ export function registerExtractionTools(server: McpServer, deps: ToolDeps): void
             selector: z.string().min(1).optional().describe("CSS selector for target container (e.g., '.message:nth-child(3)')"),
             ref: z.string().min(1).optional().describe("Element ref from snapshot (e.g., 'e12'). Either selector or ref required."),
             types: z
-              .array(z.string().min(1))
+              .array(z.enum(['images', 'links', 'media', 'documents', 'image', 'link', 'document']))
               .optional()
-              .describe("Resource types to extract: 'images', 'links', 'media', 'documents'. Default: all."),
+              .describe(
+                "Resource types to extract: 'images', 'links', 'media', 'documents' (singular forms also accepted). Default: all."
+              ),
             extensions: z.array(z.string().min(1)).optional().describe("Filter by file extensions: ['pdf', 'jpg', 'png']"),
             resolveBlobs: z.boolean().optional().default(false).describe("Resolve blob: URLs to data: URIs"),
             triggerLazyLoad: z.boolean().optional().default(false).describe("Scroll to trigger lazy-loaded images before extraction"),
@@ -74,7 +78,10 @@ export function registerExtractionTools(server: McpServer, deps: ToolDeps): void
       userId: z.string().min(1).optional().describe("User ID override (default: tracked tab userId)"),
       selector: z.string().min(1).optional().describe("CSS selector for target container"),
       ref: z.string().min(1).optional().describe("Element ref from snapshot"),
-      types: z.array(z.string().min(1)).optional().describe("Resource types: 'images', 'links', 'media', 'documents'"),
+      types: z
+        .array(z.enum(['images', 'links', 'media', 'documents', 'image', 'link', 'document']))
+        .optional()
+        .describe("Resource types: 'images', 'links', 'media', 'documents' (singular forms also accepted)"),
       extensions: z.array(z.string().min(1)).optional().describe("Filter extensions: ['jpg', 'pdf']"),
       resolveBlobs: z.boolean().optional().default(true).describe("Auto-resolve blob: URLs"),
       concurrency: z.number().int().positive().optional().default(5).describe("Parallel download limit"),
@@ -88,7 +95,10 @@ export function registerExtractionTools(server: McpServer, deps: ToolDeps): void
             userId: z.string().min(1).optional().describe("User ID override (default: tracked tab userId)"),
             selector: z.string().min(1).optional().describe("CSS selector for target container"),
             ref: z.string().min(1).optional().describe("Element ref from snapshot"),
-            types: z.array(z.string().min(1)).optional().describe("Resource types: 'images', 'links', 'media', 'documents'"),
+            types: z
+              .array(z.enum(['images', 'links', 'media', 'documents', 'image', 'link', 'document']))
+              .optional()
+              .describe("Resource types: 'images', 'links', 'media', 'documents' (singular forms also accepted)"),
             extensions: z.array(z.string().min(1)).optional().describe("Filter extensions: ['jpg', 'pdf']"),
             resolveBlobs: z.boolean().optional().default(true).describe("Auto-resolve blob: URLs"),
             concurrency: z.number().int().positive().optional().default(5).describe("Parallel download limit"),
