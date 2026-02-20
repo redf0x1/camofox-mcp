@@ -171,6 +171,22 @@ export function registerDownloadTools(server: McpServer, deps: ToolDeps): void {
           return okResult({ ...downloadMeta, content: buffer.toString("base64") });
         }
 
+        if (parsed.includeContent) {
+          if (size === undefined || size === null || size === 0 || Number.isNaN(size)) {
+            return okResult({
+              ...downloadMeta,
+              note: "Content omitted: file size unknown. Use the download URL or re-check later."
+            });
+          }
+
+          if (typeof size === "number" && size > MAX_INLINE_NON_IMAGE_BYTES) {
+            return okResult({
+              ...downloadMeta,
+              note: `Content omitted: file exceeds 256KB (${size} bytes).`
+            });
+          }
+        }
+
         return okResult(downloadMeta);
       } catch (error) {
         return toErrorResult(error);

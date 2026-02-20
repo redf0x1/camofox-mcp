@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { AppError, normalizeError, okResult, toErrorResult } from "../errors.js";
+import { AppError, binaryResult, normalizeError, okResult, toErrorResult } from "../errors.js";
 
 describe("errors", () => {
   it("normalizeError() returns AppError input as-is", () => {
@@ -71,5 +71,10 @@ describe("errors", () => {
     const result = okResult({ a: 1 });
     expect(result.isError).toBeUndefined();
     expect(result.content).toEqual([{ type: "text", text: JSON.stringify({ a: 1 }) }]);
+  });
+
+  it("binaryResult returns image content with given mimeType", () => {
+    const result = binaryResult("base64data", "image/png");
+    expect(result.content).toEqual([{ type: "image", data: "base64data", mimeType: "image/png" }]);
   });
 });
