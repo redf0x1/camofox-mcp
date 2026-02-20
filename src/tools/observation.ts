@@ -55,13 +55,27 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
     "get_links",
     "Get all hyperlinks on page with URLs and text. Useful for navigation discovery and site mapping.",
     {
-      tabId: z.string().min(1).describe("Tab ID from create_tab")
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      scope: z.string().min(1).optional().describe("CSS selector to scope link extraction to a container"),
+      extension: z.string().min(1).optional().describe("Filter by extension, comma-separated (e.g. 'pdf,zip')"),
+      downloadOnly: z.boolean().optional().describe("Only include links with a download attribute")
     },
     async (input: unknown) => {
       try {
-        const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
+        const parsed = z
+          .object({
+            tabId: z.string().min(1).describe("Tab ID from create_tab"),
+            scope: z.string().min(1).optional().describe("CSS selector to scope link extraction to a container"),
+            extension: z.string().min(1).optional().describe("Filter by extension, comma-separated (e.g. 'pdf,zip')"),
+            downloadOnly: z.boolean().optional().describe("Only include links with a download attribute")
+          })
+          .parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        const response = await deps.client.getLinks(parsed.tabId, tracked.userId);
+        const response = await deps.client.getLinksWithOptions(parsed.tabId, tracked.userId, {
+          scope: parsed.scope,
+          extension: parsed.extension,
+          downloadOnly: parsed.downloadOnly
+        });
         incrementToolCall(parsed.tabId);
         return okResult(response.links);
       } catch (error) {

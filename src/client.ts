@@ -356,7 +356,8 @@ export class CamofoxClient {
         expression,
         userId,
         ...(timeout !== undefined ? { timeout } : {})
-      })
+      }),
+      requireApiKey: true
     }, EvaluateResponseSchema);
 
     return {
@@ -449,12 +450,36 @@ export class CamofoxClient {
   }
 
   async getLinks(tabId: string, userId: string): Promise<LinkResponse> {
+    return this.getLinksWithOptions(tabId, userId);
+  }
+
+  async getLinksWithOptions(
+    tabId: string,
+    userId: string,
+    options?: { scope?: string; extension?: string; downloadOnly?: boolean }
+  ): Promise<LinkResponse> {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+
+    if (options?.scope) {
+      params.set("scope", options.scope);
+    }
+
+    if (options?.extension) {
+      params.set("extension", options.extension);
+    }
+
+    if (options?.downloadOnly !== undefined) {
+      params.set("downloadOnly", options.downloadOnly ? "true" : "false");
+    }
+
     const response = await this.requestJson(
-      `/tabs/${encodeURIComponent(tabId)}/links?userId=${encodeURIComponent(userId)}`,
+      `/tabs/${encodeURIComponent(tabId)}/links?${params.toString()}`,
       {
-      method: "GET"
-      }
-    , LinksRawResponseSchema);
+        method: "GET"
+      },
+      LinksRawResponseSchema
+    );
 
     const links = response.links ?? [];
     return {
@@ -463,6 +488,161 @@ export class CamofoxClient {
         href: item.href ?? ""
       }))
     };
+  }
+
+  // Download management
+  async listTabDownloads(
+    tabId: string,
+    userId: string,
+    filters?: {
+      status?: string;
+      extension?: string;
+      mimeType?: string;
+      minSize?: number;
+      maxSize?: number;
+      sort?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+
+    if (filters?.status) params.set("status", filters.status);
+    if (filters?.extension) params.set("extension", filters.extension);
+    if (filters?.mimeType) params.set("mimeType", filters.mimeType);
+    if (filters?.minSize !== undefined) params.set("minSize", String(filters.minSize));
+    if (filters?.maxSize !== undefined) params.set("maxSize", String(filters.maxSize));
+    if (filters?.sort) params.set("sort", filters.sort);
+    if (filters?.limit !== undefined) params.set("limit", String(filters.limit));
+    if (filters?.offset !== undefined) params.set("offset", String(filters.offset));
+
+    return this.requestJson(
+      `/tabs/${encodeURIComponent(tabId)}/downloads?${params.toString()}`,
+      { method: "GET" },
+      z.unknown()
+    );
+  }
+
+  async listUserDownloads(
+    userId: string,
+    filters?: {
+      status?: string;
+      extension?: string;
+      mimeType?: string;
+      minSize?: number;
+      maxSize?: number;
+      sort?: string;
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<any> {
+    const params = new URLSearchParams();
+
+    if (filters?.status) params.set("status", filters.status);
+    if (filters?.extension) params.set("extension", filters.extension);
+    if (filters?.mimeType) params.set("mimeType", filters.mimeType);
+    if (filters?.minSize !== undefined) params.set("minSize", String(filters.minSize));
+    if (filters?.maxSize !== undefined) params.set("maxSize", String(filters.maxSize));
+    if (filters?.sort) params.set("sort", filters.sort);
+    if (filters?.limit !== undefined) params.set("limit", String(filters.limit));
+    if (filters?.offset !== undefined) params.set("offset", String(filters.offset));
+
+    const query = params.toString();
+    return this.requestJson(
+      `/users/${encodeURIComponent(userId)}/downloads${query ? `?${query}` : ""}`,
+      { method: "GET" },
+      z.unknown()
+    );
+  }
+
+  async getDownload(downloadId: string, userId: string): Promise<any> {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+    return this.requestJson(
+      `/downloads/${encodeURIComponent(downloadId)}?${params.toString()}`,
+      { method: "GET" },
+      z.unknown()
+    );
+  }
+
+  async getDownloadContent(downloadId: string, userId: string): Promise<Buffer> {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+    const binary = await this.requestBinary(
+      `/downloads/${encodeURIComponent(downloadId)}/content?${params.toString()}`,
+      { method: "GET" }
+    );
+    return Buffer.from(binary);
+  }
+
+  async deleteDownload(downloadId: string, userId: string): Promise<any> {
+    return this.requestJson(
+      `/downloads/${encodeURIComponent(downloadId)}`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({ userId })
+      },
+      z.unknown()
+    );
+  }
+
+  // Resource extraction
+  async extractResources(
+    tabId: string,
+    params: {
+      userId: string;
+      selector?: string;
+      ref?: string;
+      types?: string[];
+      extensions?: string[];
+      resolveBlobs?: boolean;
+      triggerLazyLoad?: boolean;
+      maxDepth?: number;
+    }
+  ): Promise<any> {
+    return this.requestJson(
+      `/tabs/${encodeURIComponent(tabId)}/extract-resources`,
+      {
+        method: "POST",
+        body: JSON.stringify(params)
+      },
+      z.unknown()
+    );
+  }
+
+  async batchDownload(
+    tabId: string,
+    params: {
+      userId: string;
+      selector?: string;
+      ref?: string;
+      types?: string[];
+      extensions?: string[];
+      resolveBlobs?: boolean;
+      concurrency?: number;
+      maxFiles?: number;
+    }
+  ): Promise<any> {
+    return this.requestJson(
+      `/tabs/${encodeURIComponent(tabId)}/batch-download`,
+      {
+        method: "POST",
+        body: JSON.stringify(params)
+      },
+      z.unknown()
+    );
+  }
+
+  async resolveBlobs(tabId: string, userId: string, urls: string[]): Promise<any> {
+    return this.requestJson(
+      `/tabs/${encodeURIComponent(tabId)}/resolve-blobs`,
+      {
+        method: "POST",
+        body: JSON.stringify({ userId, urls })
+      },
+      z.unknown()
+    );
   }
 
   async getStats(tabId: string, userId: string): Promise<StatsResponse> {
@@ -490,7 +670,8 @@ export class CamofoxClient {
     if (cookies.length <= MAX_COOKIES_PER_REQUEST) {
       await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
         method: "POST",
-        body: JSON.stringify({ cookies, ...(tabId && { tabId }) })
+        body: JSON.stringify({ cookies, ...(tabId && { tabId }) }),
+        requireApiKey: true
       });
       return;
     }
@@ -499,14 +680,15 @@ export class CamofoxClient {
       const batch = cookies.slice(i, i + MAX_COOKIES_PER_REQUEST);
       await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}/cookies`, {
         method: "POST",
-        body: JSON.stringify({ cookies: batch, ...(tabId && { tabId }) })
+        body: JSON.stringify({ cookies: batch, ...(tabId && { tabId }) }),
+        requireApiKey: true
       });
     }
   }
 
   private async requestJson<T>(
     path: string,
-    init: RequestInit,
+    init: RequestInit & { requireApiKey?: boolean },
     schema: z.ZodType<T>
   ): Promise<T> {
     const response = await this.request(path, init);
@@ -540,16 +722,16 @@ export class CamofoxClient {
     return parsed.data;
   }
 
-  private async requestBinary(path: string, init: RequestInit): Promise<ArrayBuffer> {
+  private async requestBinary(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<ArrayBuffer> {
     const response = await this.request(path, init);
     return response.arrayBuffer();
   }
 
-  private async requestNoContent(path: string, init: RequestInit): Promise<void> {
+  private async requestNoContent(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<void> {
     await this.request(path, init);
   }
 
-  private async request(path: string, init: RequestInit): Promise<Response> {
+  private async request(path: string, init: RequestInit & { requireApiKey?: boolean }): Promise<Response> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeout);
 
@@ -618,16 +800,16 @@ export class CamofoxClient {
       }
     }
 
-    if (response.status === 403) {
-      return new AppError(
-        "API_KEY_REQUIRED",
-        `CamoFox server requires authentication. Set CAMOFOX_API_KEY environment variable. Details: ${message}`,
-        403
-      );
-    }
-
     if (response.status === 404) {
       return new AppError("TAB_NOT_FOUND", message, response.status);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      const hint = "CAMOFOX_API_KEY is required for this operation";
+      const combined = message.toLowerCase().includes("camofox_api_key")
+        ? message
+        : `${hint} (${response.status}): ${message}`;
+      return new AppError("API_KEY_REQUIRED", combined, response.status);
     }
 
     if (response.status === 400 && /element|ref|selector/i.test(message)) {

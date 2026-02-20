@@ -54,6 +54,12 @@ export function imageResult(base64Png: string): ToolResult {
   };
 }
 
+export function binaryResult(base64: string, mimeType: string): ToolResult {
+  return {
+    content: [{ type: "image", data: base64, mimeType }]
+  };
+}
+
 export function normalizeError(error: unknown): AppError {
   if (error instanceof AppError) {
     return error;
