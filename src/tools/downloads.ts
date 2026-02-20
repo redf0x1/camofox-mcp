@@ -22,7 +22,7 @@ const MAX_INLINE_IMAGE_BYTES = 10 * 1024 * 1024;
 export function registerDownloadTools(server: McpServer, deps: ToolDeps): void {
   server.tool(
     "list_downloads",
-    "List downloaded files with optional filtering by tab, status, extension, MIME type, and size range",
+    "List downloaded files with optional filtering by tab, status, extension, MIME type, and size range. Each download includes contentUrl for direct file retrieval.",
     {
       tabId: z.string().min(1).optional().describe("Filter by specific tab. If omitted, lists all user downloads."),
       userId: z.string().min(1).optional().describe("User ID (default: CAMOFOX_DEFAULT_USER_ID or tracked tab userId)"),
@@ -104,7 +104,7 @@ export function registerDownloadTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "get_download",
-    "Get a downloaded file. Images are always returned as viewable images. Set includeContent=true to get non-image file content as base64 (max 256KB). Otherwise returns metadata only.",
+    "Get a downloaded file. Images are always returned as viewable images. Recommended for AI agents: set includeContent=true to get non-image file content as base64 inline (max 256KB). Otherwise returns metadata only (including contentUrl).",
     {
       downloadId: z.string().min(1).describe("ID of the download"),
       includeContent: z.boolean().optional().default(false).describe("Whether to include file content for non-image files"),

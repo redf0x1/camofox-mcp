@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.9.1] — 2026-02-20
+### Improved
+- Download tool descriptions updated: `list_downloads` mentions `contentUrl`, `get_download` recommends `includeContent: true`
+
 ## [1.9.0] - 2025-02-20
 
 ### Added
