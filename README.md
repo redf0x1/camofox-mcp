@@ -53,7 +53,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 35 | 1 | 33 |
+| Tools | 41 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -289,7 +289,81 @@ Your MCP client should launch the MCP container separately (using `docker run -i
 
 IMPORTANT: Do NOT use `-t` flag — TTY corrupts the JSON-RPC stdio stream.
 
-## Tools (35)
+## HTTP Transport (OpenClaw & Remote)
+
+CamoFox MCP now supports Streamable HTTP transport for integration with OpenClaw and other HTTP-based MCP clients.
+
+### Quick Start
+
+```bash
+# Start in HTTP mode
+CAMOFOX_TRANSPORT=http npx camofox-mcp
+
+# Or with CLI flags
+npx camofox-mcp --transport http --http-port 3000
+
+# With custom settings
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 CAMOFOX_HTTP_HOST=0.0.0.0 npx camofox-mcp
+```
+
+### Configuration
+
+| Variable | CLI Flag | Default | Description |
+|----------|----------|---------|-------------|
+| `CAMOFOX_TRANSPORT` | `--transport` | `stdio` | Transport mode: `stdio` or `http` |
+| `CAMOFOX_HTTP_PORT` | `--http-port` | `3000` | HTTP server port |
+| `CAMOFOX_HTTP_HOST` | `--http-host` | `127.0.0.1` | HTTP server bind address |
+| `CAMOFOX_HTTP_RATE_LIMIT` | `--http-rate-limit` | `60` | Max requests per minute |
+
+### Security Notes
+
+- Default bind address is `127.0.0.1` (localhost only)
+- To expose on network, use `--http-host 0.0.0.0` (ensure proper firewall/auth)
+- Rate limiting enabled by default (60 req/min)
+- Set `CAMOFOX_API_KEY` for CamoFox Browser authentication
+
+## OpenClaw Integration
+
+CamoFox MCP integrates with [OpenClaw](https://github.com/openclaw/openclaw) via HTTP transport, providing anti-detection browser automation as an MCP tool server.
+
+### Method 1: MCP Server Config (Recommended)
+
+Add to your OpenClaw `mcpServers` configuration:
+
+```json
+{
+  "mcpServers": {
+    "camofox": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+Then start CamoFox MCP in HTTP mode:
+
+```bash
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=your-key npx camofox-mcp
+```
+
+### Method 2: mcptoskill CLI
+
+```bash
+npx @filiksyos/mcptoskill http://localhost:3000/mcp
+```
+
+### Method 3: Direct URL
+
+Use `http://localhost:3000/mcp` as a direct MCP server URL in OpenClaw settings.
+
+### Why CamoFox for OpenClaw?
+
+OpenClaw's built-in browser uses standard headless Chrome which is easily detected by anti-bot systems. CamoFox provides:
+- **C++ level fingerprint spoofing** — undetectable by bot detection
+- **41 browser automation tools** — navigation, clicks, forms, screenshots, search across 14 engines
+- **Anti-detection by default** — no configuration needed
+
+## Tools (41)
 
 ### Tab Management
 | Tool | Description |
@@ -452,7 +526,7 @@ docker run -i --rm \
 
 ## API Key Setup
 
-The API key is **optional**. All 35 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
+The API key is **optional**. All 41 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
 
 If your CamoFox browser server **has authentication enabled**, these tools need a matching key:
 

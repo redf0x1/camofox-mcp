@@ -9,13 +9,17 @@ describe("config", () => {
   it("loadConfig() returns defaults when no env/CLI provided", () => {
     const cfg = loadConfig([], {} as NodeJS.ProcessEnv);
 
-    expect(cfg).toEqual({
+    expect(cfg).toMatchObject({
       camofoxUrl: "http://localhost:9377",
       apiKey: undefined,
       defaultUserId: "default",
       profilesDir: join(homedir(), ".camofox-mcp", "profiles"),
       timeout: 30_000,
-      autoSave: true
+      autoSave: true,
+      transport: "stdio",
+      httpPort: 3000,
+      httpHost: "127.0.0.1",
+      httpRateLimit: 60
     });
   });
 
@@ -78,6 +82,49 @@ describe("config", () => {
     // timeout remains env-derived unless CLI provides it
     expect(cfg.timeout).toBe(1111);
     expect(cfg.autoSave).toBe(true);
+  });
+
+  it("loadConfig() uses HTTP transport env var overrides", () => {
+    const cfg = loadConfig([], {
+      CAMOFOX_TRANSPORT: "http",
+      CAMOFOX_HTTP_PORT: "8080",
+      CAMOFOX_HTTP_HOST: "0.0.0.0",
+      CAMOFOX_HTTP_RATE_LIMIT: "120"
+    } as NodeJS.ProcessEnv);
+
+    expect(cfg.transport).toBe("http");
+    expect(cfg.httpPort).toBe(8080);
+    expect(cfg.httpHost).toBe("0.0.0.0");
+    expect(cfg.httpRateLimit).toBe(120);
+  });
+
+  it("loadConfig() uses HTTP transport CLI arg overrides", () => {
+    const cfg = loadConfig(
+      [
+        "--transport",
+        "http",
+        "--http-port",
+        "9090",
+        "--http-host",
+        "0.0.0.0",
+        "--http-rate-limit",
+        "240"
+      ],
+      {} as NodeJS.ProcessEnv
+    );
+
+    expect(cfg.transport).toBe("http");
+    expect(cfg.httpPort).toBe(9090);
+    expect(cfg.httpHost).toBe("0.0.0.0");
+    expect(cfg.httpRateLimit).toBe(240);
+  });
+
+  it("loadConfig() defaults to stdio for invalid CAMOFOX_TRANSPORT", () => {
+    const cfg = loadConfig([], {
+      CAMOFOX_TRANSPORT: "invalid"
+    } as NodeJS.ProcessEnv);
+
+    expect(cfg.transport).toBe("stdio");
   });
 
   it("loadConfig() handles invalid values", () => {

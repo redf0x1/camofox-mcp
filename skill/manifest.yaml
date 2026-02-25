@@ -1,0 +1,123 @@
+name: camofox-mcp
+version: 1.10.0
+description: Anti-detection browser MCP server for AI agents — navigate, interact, and automate the web without getting blocked
+author: redf0x1
+license: MIT
+homepage: https://github.com/redf0x1/camofox-mcp#readme
+
+tags:
+  - mcp
+  - openclaw
+  - browser-automation
+  - anti-detection
+  - camofox
+  - stealth
+  - ai-agent
+
+server:
+  type: http
+  url: http://localhost:3000/mcp
+  transport: streamable-http
+
+prerequisites:
+  - name: CamoFox Browser
+    required: true
+    description: CamoFox Browser server must be running (default http://localhost:9377)
+  - name: Start command
+    required: true
+    description: Start MCP server in HTTP mode with CAMOFOX_TRANSPORT=http npx camofox-mcp@1.10.0
+
+tools:
+  - name: server_status
+    description: Check CamoFox server health and browser connection.
+
+  - name: create_tab
+    description: Create a new anti-detection browser tab with optional URL and session settings.
+  - name: close_tab
+    description: Close a browser tab and release resources.
+  - name: list_tabs
+    description: List all open browser tabs with URLs and titles.
+
+  - name: navigate
+    description: Navigate a tab to a URL and return final location.
+  - name: go_back
+    description: Navigate backward in browser history.
+  - name: go_forward
+    description: Navigate forward in browser history.
+  - name: refresh
+    description: Reload the current page.
+
+  - name: click
+    description: Click an element by snapshot ref or CSS selector.
+  - name: type_text
+    description: Type text into an input using ref or CSS selector.
+  - name: scroll
+    description: Scroll page up or down by a pixel amount.
+  - name: camofox_scroll_element
+    description: Scroll a specific container element and return scroll metadata.
+  - name: camofox_evaluate_js
+    description: Execute JavaScript in isolated page context for advanced extraction.
+  - name: camofox_hover
+    description: Hover on an element to trigger menus, tooltips, or hover states.
+  - name: camofox_wait_for
+    description: Wait for page readiness including DOM/network stabilization.
+  - name: camofox_press_key
+    description: Press a keyboard key such as Enter, Tab, Escape, or arrows.
+
+  - name: snapshot
+    description: Capture token-efficient accessibility tree snapshot with element refs.
+  - name: screenshot
+    description: Capture visual screenshot as base64 PNG.
+  - name: get_links
+    description: Extract hyperlinks from page with optional filtering.
+  - name: camofox_wait_for_text
+    description: Wait until specified text appears on page.
+
+  - name: list_downloads
+    description: List downloads with filters for status/type/size.
+  - name: get_download
+    description: Retrieve download metadata and optional inline file content.
+  - name: delete_download
+    description: Delete downloaded file from disk and registry.
+
+  - name: extract_resources
+    description: Extract images, links, media, and documents from a DOM scope.
+  - name: batch_download
+    description: Extract and download scoped resources in one call.
+  - name: resolve_blobs
+    description: Convert blob URLs into downloadable data URIs.
+
+  - name: web_search
+    description: Search across 14 engines and return browsable results context.
+
+  - name: import_cookies
+    description: Import cookie JSON into session to restore authenticated state.
+  - name: get_stats
+    description: Return session usage and performance statistics.
+  - name: camofox_close_session
+    description: Close all tabs for a user session.
+
+  - name: fill_form
+    description: Fill multiple fields in one operation with optional submit click.
+  - name: type_and_submit
+    description: Type text and press key (default Enter) in one step.
+  - name: navigate_and_snapshot
+    description: Navigate, wait, and snapshot in a single workflow call.
+  - name: scroll_and_snapshot
+    description: Scroll then snapshot to reveal below-fold content.
+  - name: camofox_scroll_element_and_snapshot
+    description: Scroll a container element and snapshot after incremental load.
+  - name: batch_click
+    description: Click multiple elements sequentially with per-click results.
+
+  - name: save_profile
+    description: Save tab cookies to a named on-disk profile.
+  - name: load_profile
+    description: Load named profile cookies into an active tab.
+  - name: list_profiles
+    description: List saved profiles and metadata.
+  - name: delete_profile
+    description: Delete a saved profile permanently.
+
+  - name: list_presets
+    description: List available geo presets (locale/timezone/geolocation).

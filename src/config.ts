@@ -10,6 +10,10 @@ interface CliArgs {
   profilesDir?: string;
   timeout?: number;
   autoSave?: boolean;
+  transport?: "stdio" | "http";
+  httpPort?: number;
+  httpHost?: string;
+  httpRateLimit?: number;
 }
 
 function parseBoolFlag(raw: string): boolean | undefined {
@@ -77,6 +81,39 @@ function parseCliArgs(argv: string[]): CliArgs {
       }
       continue;
     }
+
+    if (current === "--transport" && next) {
+      const transport = next.trim().toLowerCase();
+      if (transport === "stdio" || transport === "http") {
+        args.transport = transport;
+      }
+      i += 1;
+      continue;
+    }
+
+    if (current === "--http-port" && next) {
+      const httpPort = Number.parseInt(next, 10);
+      if (!Number.isNaN(httpPort) && httpPort > 0) {
+        args.httpPort = httpPort;
+      }
+      i += 1;
+      continue;
+    }
+
+    if (current === "--http-host" && next) {
+      args.httpHost = next;
+      i += 1;
+      continue;
+    }
+
+    if (current === "--http-rate-limit" && next) {
+      const httpRateLimit = Number.parseInt(next, 10);
+      if (!Number.isNaN(httpRateLimit) && httpRateLimit > 0) {
+        args.httpRateLimit = httpRateLimit;
+      }
+      i += 1;
+      continue;
+    }
   }
 
   return args;
@@ -85,6 +122,12 @@ function parseCliArgs(argv: string[]): CliArgs {
 export function loadConfig(argv = process.argv.slice(2), env = process.env): Config {
   const cli = parseCliArgs(argv);
   const timeoutFromEnv = Number.parseInt(env.CAMOFOX_TIMEOUT ?? "", 10);
+  const transportFromEnv = env.CAMOFOX_TRANSPORT?.trim().toLowerCase();
+  const httpPortFromEnv = Number.parseInt(env.CAMOFOX_HTTP_PORT ?? "", 10);
+  const httpRateLimitFromEnv = Number.parseInt(env.CAMOFOX_HTTP_RATE_LIMIT ?? "", 10);
+
+  const envTransport =
+    transportFromEnv === "stdio" || transportFromEnv === "http" ? transportFromEnv : undefined;
 
   return {
     camofoxUrl: cli.camofoxUrl ?? env.CAMOFOX_URL ?? "http://localhost:9377",
@@ -92,6 +135,10 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
     defaultUserId: cli.defaultUserId ?? env.CAMOFOX_DEFAULT_USER_ID ?? "default",
     profilesDir: cli.profilesDir ?? env.CAMOFOX_PROFILES_DIR ?? join(homedir(), ".camofox-mcp", "profiles"),
     timeout: cli.timeout ?? (Number.isNaN(timeoutFromEnv) ? 30_000 : timeoutFromEnv),
-    autoSave: cli.autoSave ?? !isFalsy(env.CAMOFOX_AUTO_SAVE)
+    autoSave: cli.autoSave ?? !isFalsy(env.CAMOFOX_AUTO_SAVE),
+    transport: cli.transport ?? envTransport ?? "stdio",
+    httpPort: cli.httpPort ?? (Number.isNaN(httpPortFromEnv) ? 3000 : httpPortFromEnv),
+    httpHost: cli.httpHost ?? env.CAMOFOX_HTTP_HOST ?? "127.0.0.1",
+    httpRateLimit: cli.httpRateLimit ?? (Number.isNaN(httpRateLimitFromEnv) ? 60 : httpRateLimitFromEnv)
   };
 }

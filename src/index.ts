@@ -9,6 +9,12 @@ import { getAllTrackedTabs, removeTrackedTab, setupCleanup } from "./state.js";
 async function main(): Promise<void> {
   const config = loadConfig();
 
+  if (config.transport === "http") {
+    const { startHttpServer } = await import("./http.js");
+    await startHttpServer(config);
+    return;
+  }
+
   if (!config.apiKey) {
     console.error(
       "[camofox-mcp] ℹ️  CAMOFOX_API_KEY not set — running without authentication. " +

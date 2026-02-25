@@ -44,6 +44,11 @@ USER camofox
 # Environment defaults
 ENV NODE_ENV=production
 ENV CAMOFOX_URL=http://localhost:9377
+ENV CAMOFOX_TRANSPORT=stdio
+ENV CAMOFOX_HTTP_PORT=8080
+
+# HTTP transport listens on CAMOFOX_HTTP_PORT when enabled
+EXPOSE 8080
 
 # Use tini as entrypoint for signal forwarding
 ENTRYPOINT ["/sbin/tini", "--"]

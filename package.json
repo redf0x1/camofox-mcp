@@ -1,11 +1,12 @@
 {
   "name": "camofox-mcp",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "description": "Anti-detection browser MCP server for AI agents — navigate, interact, and automate the web without getting blocked",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "camofox-mcp": "dist/index.js"
+    "camofox-mcp": "dist/index.js",
+    "camofox-mcp-http": "dist/http.js"
   },
   "type": "module",
   "scripts": {
@@ -58,6 +59,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.26.0",
+    "express-rate-limit": "^8.2.1",
     "zod": "4.3.6"
   },
   "devDependencies": {

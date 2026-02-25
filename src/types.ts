@@ -5,6 +5,10 @@ export interface Config {
   profilesDir: string;
   timeout: number;
   autoSave: boolean;
+  transport: "stdio" | "http";
+  httpPort: number;
+  httpHost: string;
+  httpRateLimit: number;
 }
 
 export interface HealthResponse {

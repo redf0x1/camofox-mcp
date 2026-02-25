@@ -1,21 +1,21 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 35 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 41 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
   },
   "version_detail": {
-    "version": "1.7.0",
-    "release_date": "2026-02-14",
+    "version": "1.10.0",
+    "release_date": "2026-02-25",
     "is_stable": true
   },
   "packages": [
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.7.0",
+      "version": "1.10.0",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -36,6 +36,30 @@
           "name": "CAMOFOX_API_KEY",
           "description": "Optional API key for authentication",
           "required": false
+        },
+        {
+          "name": "CAMOFOX_TRANSPORT",
+          "description": "Transport mode: stdio or http",
+          "required": false,
+          "default": "stdio"
+        },
+        {
+          "name": "CAMOFOX_HTTP_PORT",
+          "description": "HTTP server port for Streamable MCP transport",
+          "required": false,
+          "default": "3000"
+        },
+        {
+          "name": "CAMOFOX_HTTP_HOST",
+          "description": "HTTP server bind address",
+          "required": false,
+          "default": "127.0.0.1"
+        },
+        {
+          "name": "CAMOFOX_HTTP_RATE_LIMIT",
+          "description": "Maximum HTTP requests per minute",
+          "required": false,
+          "default": "60"
         },
         {
           "name": "CAMOFOX_PROFILES_DIR",
@@ -59,13 +83,18 @@
     {"name": "click", "description": "Click an element. Provide either ref (from snapshot) or CSS selector. Use snapshot first to discover element refs."},
     {"name": "close_tab", "description": "Close a browser tab and release resources. Always close tabs when done to free memory."},
     {"name": "create_tab", "description": "Create a new browser tab with anti-detection fingerprinting. Each tab gets a unique fingerprint. Optionally provide a URL and userId for session isolation. Returns the tab ID for subsequent operations."},
+    {"name": "delete_download", "description": "Delete a downloaded file from disk and registry"},
     {"name": "fill_form", "description": "Fill multiple form fields in one call. Provide an array of field entries, each with a ref or CSS selector and the text to type. Optionally specify a submit button to click after filling."},
+    {"name": "batch_download", "description": "Extract resources from a DOM container and download them all. Combines extract_resources + download in one call. Useful for downloading all images from a chat, all PDFs from a table, etc."},
+    {"name": "extract_resources", "description": "Extract resources (images, links, media, documents) from a specific DOM container. Use a CSS selector or element ref from snapshot to scope extraction to a particular section of the page. This is useful for extracting all images from a specific post, all links from a table, etc."},
+    {"name": "get_download", "description": "Get a downloaded file. Images are always returned as viewable images. Recommended for AI agents: set includeContent=true to get non-image file content as base64 inline (max 256KB). Otherwise returns metadata only (including contentUrl)."},
     {"name": "get_links", "description": "Get all hyperlinks on page with URLs and text. Useful for navigation discovery and site mapping."},
     {"name": "get_stats", "description": "Get session statistics: request counts, active tabs, uptime, performance metrics."},
     {"name": "go_back", "description": "Navigate backward in browser history (Back button). Returns new page URL."},
     {"name": "go_forward", "description": "Navigate forward in browser history (Forward button). Returns new page URL."},
     {"name": "import_cookies", "description": "Import cookies for authenticated sessions. Provide cookies as JSON string array. Restores login sessions without re-auth. Requires userId."},
     {"name": "list_presets", "description": "List all available geo presets supported by the CamoFox server. Presets include locale, timezone, and optional geolocation."},
+    {"name": "list_downloads", "description": "List downloaded files with optional filtering by tab, status, extension, MIME type, and size range. Each download includes contentUrl for direct file retrieval."},
     {"name": "save_profile", "description": "Export cookies from an active tab and save them to a named session profile on disk."},
     {"name": "load_profile", "description": "Load a named session profile from disk and import its cookies into a tab's browser session."},
     {"name": "list_profiles", "description": "List saved session profiles with basic metadata."},
@@ -79,6 +108,7 @@
     {"name": "scroll_and_snapshot", "description": "Scroll the page and take a snapshot. Useful for revealing content below the fold."},
     {"name": "server_status", "description": "Check CamoFox server health and browser connection. Call first to verify server is running. Returns version, browser status, and active tab count."},
     {"name": "snapshot", "description": "Get accessibility tree snapshot — the PRIMARY way to read page content. Returns element refs, roles, names and values. Token-efficient. Always prefer over screenshot. Element refs are used with click and type_text."},
+    {"name": "resolve_blobs", "description": "Resolve blob: URLs to downloadable base64 data. Blob URLs are temporary browser objects (common in Telegram, WhatsApp, Discord) that cannot be downloaded directly. This tool converts them to base64 data URIs."},
     {"name": "type_and_submit", "description": "Type text into a field and press a key (default: Enter). Useful for search boxes and single-field forms."},
     {"name": "type_text", "description": "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; use selector as fallback when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element."},
     {"name": "web_search", "description": "Search the web via 14 engines: google, youtube, amazon, bing, duckduckgo, reddit, github, stackoverflow, wikipedia, twitter, linkedin, facebook, instagram, tiktok. Call snapshot after to read results."}
