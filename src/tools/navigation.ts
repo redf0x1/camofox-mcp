@@ -20,7 +20,7 @@ export function registerNavigationTools(server: McpServer, deps: ToolDeps): void
         const result = await deps.client.navigate(parsed.tabId, parsed.url, tracked.userId);
         incrementToolCall(parsed.tabId);
         updateTabUrl(parsed.tabId, result.url);
-        return okResult({ url: result.url, title: result.title ?? "" });
+        return okResult({ url: result.url, title: result.title ?? "", refsAvailable: result.refsAvailable });
       } catch (error) {
         return toErrorResult(error);
       }
@@ -37,12 +37,16 @@ export function registerNavigationTools(server: McpServer, deps: ToolDeps): void
       try {
         const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.goBack(parsed.tabId, tracked.userId);
+        const action = await deps.client.goBack(parsed.tabId, tracked.userId);
         const snap = await deps.client.snapshot(parsed.tabId, tracked.userId);
         incrementToolCall(parsed.tabId);
         updateTabUrl(parsed.tabId, snap.url);
         updateRefsCount(parsed.tabId, snap.refsCount);
-        return okResult({ url: snap.url });
+        return okResult({
+          url: snap.url || action.url,
+          title: action.title ?? "",
+          refsAvailable: action.refsAvailable
+        });
       } catch (error) {
         return toErrorResult(error);
       }
@@ -59,12 +63,16 @@ export function registerNavigationTools(server: McpServer, deps: ToolDeps): void
       try {
         const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.goForward(parsed.tabId, tracked.userId);
+        const action = await deps.client.goForward(parsed.tabId, tracked.userId);
         const snap = await deps.client.snapshot(parsed.tabId, tracked.userId);
         incrementToolCall(parsed.tabId);
         updateTabUrl(parsed.tabId, snap.url);
         updateRefsCount(parsed.tabId, snap.refsCount);
-        return okResult({ url: snap.url });
+        return okResult({
+          url: snap.url || action.url,
+          title: action.title ?? "",
+          refsAvailable: action.refsAvailable
+        });
       } catch (error) {
         return toErrorResult(error);
       }
@@ -81,9 +89,17 @@ export function registerNavigationTools(server: McpServer, deps: ToolDeps): void
       try {
         const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.refresh(parsed.tabId, tracked.userId);
+        const action = await deps.client.refresh(parsed.tabId, tracked.userId);
         incrementToolCall(parsed.tabId);
-        return okResult({ success: true });
+        if (action.url) {
+          updateTabUrl(parsed.tabId, action.url);
+        }
+        return okResult({
+          success: true,
+          url: action.url,
+          title: action.title ?? "",
+          refsAvailable: action.refsAvailable
+        });
       } catch (error) {
         return toErrorResult(error);
       }

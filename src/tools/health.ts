@@ -14,6 +14,8 @@ export function registerHealthTools(server: McpServer, deps: ToolDeps): void {
         running: health.running ?? health.browserConnected ?? false,
         browserConnected: health.browserConnected,
         version: health.version ?? "unknown",
+        consecutiveFailures: health.consecutiveFailures,
+        activeOps: health.activeOps,
         activeTabCount
       });
     } catch (error) {

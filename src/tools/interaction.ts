@@ -33,7 +33,11 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
           selector: parsed.selector
         }, tracked.userId);
         incrementToolCall(parsed.tabId);
-        return okResult({ success: result.success, navigated: result.navigated ?? false });
+        return okResult({
+          success: result.success,
+          navigated: result.navigated,
+          refsAvailable: result.refsAvailable
+        });
       } catch (error) {
         return toErrorResult(error);
       }

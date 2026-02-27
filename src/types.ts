@@ -16,6 +16,8 @@ export interface HealthResponse {
   running?: boolean;
   browserConnected: boolean;
   version?: string;
+  consecutiveFailures?: number;
+  activeOps?: number;
 }
 
 export interface CreateTabParams {
@@ -48,6 +50,7 @@ export interface TabResponse {
 export interface NavigateResponse {
   url: string;
   title?: string;
+  refsAvailable?: boolean;
 }
 
 export interface ClickParams {
@@ -57,13 +60,37 @@ export interface ClickParams {
 
 export interface ClickResponse {
   success: boolean;
-  navigated?: boolean;
+  navigated: boolean;
+  refsAvailable?: boolean;
 }
 
 export interface SnapshotResponse {
   url: string;
   snapshot: string;
   refsCount: number;
+  truncated?: boolean;
+  totalChars?: number;
+  hasMore?: boolean;
+  nextOffset?: number;
+}
+
+export interface NavigationActionResponse {
+  url: string;
+  title?: string;
+  refsAvailable?: boolean;
+}
+
+export interface YouTubeTranscriptResponse {
+  status: string;
+  transcript?: string;
+  video_url?: string;
+  video_id: string;
+  video_title?: string;
+  language?: string;
+  total_words?: number;
+  available_languages?: Array<{ code: string; name: string; kind: string }>;
+  message?: string;
+  code?: number;
 }
 
 export interface LinkItem {

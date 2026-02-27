@@ -15,6 +15,7 @@ import { registerProfileTools } from "./tools/profiles.js";
 import { registerSearchTools } from "./tools/search.js";
 import { registerSessionTools } from "./tools/session.js";
 import { registerTabsTools } from "./tools/tabs.js";
+import { registerYouTubeTools } from "./tools/youtube.js";
 import { registerPrompts } from "./prompts.js";
 
 const require = createRequire(import.meta.url);
@@ -44,6 +45,7 @@ export function createServer(config: Config): { server: McpServer; client: Camof
   registerDownloadTools(server, deps);
   registerExtractionTools(server, deps);
   registerSearchTools(server, deps);
+  registerYouTubeTools(server, deps);
   registerSessionTools(server, deps);
   registerBatchTools(server, deps);
   registerProfileTools(server, deps);

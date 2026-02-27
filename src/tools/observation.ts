@@ -10,22 +10,47 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
     "snapshot",
     "Get accessibility tree snapshot — the PRIMARY way to read page content. Returns element refs, roles, names and values. Token-efficient. Always prefer over screenshot. Element refs are used with click and type_text.",
     {
-      tabId: z.string().min(1).describe("Tab ID from create_tab")
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      offset: z.number().optional().describe("Offset for paginating large snapshots. Use nextOffset from previous response.")
     },
     async (input: unknown) => {
       try {
-        const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
+        const parsed = z.object({
+          tabId: z.string().min(1).describe("Tab ID from create_tab"),
+          offset: z.number().optional().describe("Offset for paginating large snapshots. Use nextOffset from previous response.")
+        }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        const response = await deps.client.snapshot(parsed.tabId, tracked.userId);
+        const response = await deps.client.snapshot(parsed.tabId, tracked.userId, parsed.offset);
         incrementToolCall(parsed.tabId);
         updateTabUrl(parsed.tabId, response.url);
         updateRefsCount(parsed.tabId, response.refsCount);
 
-        return okResult({
+        const result: {
+          url: string;
+          snapshot: string;
+          refsCount: number;
+          truncated?: boolean;
+          totalChars?: number;
+          hasMore?: boolean;
+          nextOffset?: number;
+          truncationInfo?: string;
+        } = {
           url: response.url,
           snapshot: response.snapshot,
           refsCount: response.refsCount
-        });
+        };
+
+        if (response.truncated) {
+          result.truncated = response.truncated;
+          result.totalChars = response.totalChars;
+          result.hasMore = response.hasMore;
+          result.nextOffset = response.nextOffset;
+          result.truncationInfo = response.hasMore
+            ? `TRUNCATED (${response.totalChars ?? "unknown"} total chars) | next offset: ${response.nextOffset ?? "unknown"}`
+            : `TRUNCATED (${response.totalChars ?? "unknown"} total chars)`;
+        }
+
+        return okResult(result);
       } catch (error) {
         return toErrorResult(error);
       }

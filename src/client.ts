@@ -8,11 +8,14 @@ import type {
   CreateTabParams,
   HealthResponse,
   LinkResponse,
+  NavigationActionResponse,
   NavigateResponse,
   PresetsResponse,
   SnapshotResponse,
   StatsResponse,
   TabResponse
+  ,
+  YouTubeTranscriptResponse
 } from "./types.js";
 
 interface ApiErrorPayload {
@@ -27,12 +30,16 @@ const ApiErrorPayloadSchema = z
   })
   .passthrough();
 
-const HealthResponseSchema = z.object({
-  ok: z.boolean(),
-  running: z.boolean().optional(),
-  browserConnected: z.boolean(),
-  version: z.string().optional()
-});
+const HealthResponseSchema = z
+  .object({
+    ok: z.boolean(),
+    running: z.boolean().optional(),
+    browserConnected: z.boolean(),
+    version: z.string().optional(),
+    consecutiveFailures: z.number().optional(),
+    activeOps: z.number().optional()
+  })
+  .passthrough();
 
 const PresetInfoSchema = z
   .object({
@@ -70,14 +77,16 @@ const CreateTabRawResponseSchema = z
 const NavigateRawResponseSchema = z
   .object({
     url: z.string().optional(),
-    title: z.string().optional()
+    title: z.string().optional(),
+    refsAvailable: z.boolean().optional()
   })
   .passthrough();
 
 const ClickRawResponseSchema = z
   .object({
     success: z.boolean().optional(),
-    navigated: z.boolean().optional()
+    navigated: z.boolean().optional(),
+    refsAvailable: z.boolean().optional()
   })
   .passthrough();
 
@@ -85,7 +94,44 @@ const SnapshotRawResponseSchema = z
   .object({
     url: z.string().optional(),
     snapshot: z.string().optional(),
-    refsCount: z.number().optional()
+    refsCount: z.number().optional(),
+    truncated: z.boolean().optional(),
+    totalChars: z.number().optional(),
+    hasMore: z.boolean().optional(),
+    nextOffset: z.number().optional()
+  })
+  .passthrough();
+
+const NavigationActionRawResponseSchema = z
+  .object({
+    url: z.string().optional(),
+    title: z.string().optional(),
+    refsAvailable: z.boolean().optional()
+  })
+  .passthrough();
+
+const YouTubeTranscriptResponseSchema = z
+  .object({
+    status: z.string(),
+    transcript: z.string().optional(),
+    video_url: z.string().optional(),
+    video_id: z.string(),
+    video_title: z.string().optional(),
+    language: z.string().optional(),
+    total_words: z.number().optional(),
+    available_languages: z
+      .array(
+        z
+          .object({
+            code: z.string(),
+            name: z.string(),
+            kind: z.string()
+          })
+          .passthrough()
+      )
+      .optional(),
+    message: z.string().optional(),
+    code: z.number().optional()
   })
   .passthrough();
 
@@ -235,7 +281,8 @@ export class CamofoxClient {
 
     return {
       url: response.url ?? url,
-      title: response.title
+      title: response.title,
+      refsAvailable: response.refsAvailable
     };
   }
 
@@ -247,29 +294,48 @@ export class CamofoxClient {
 
     return {
       url: response.url ?? "",
-      title: response.title
+      title: response.title,
+      refsAvailable: response.refsAvailable
     };
   }
 
-  async goBack(tabId: string, userId: string): Promise<void> {
-    await this.requestNoContent(`/tabs/${encodeURIComponent(tabId)}/back`, {
+  async goBack(tabId: string, userId: string): Promise<NavigationActionResponse> {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/back`, {
       method: "POST",
       body: JSON.stringify({ userId })
-    });
+    }, NavigationActionRawResponseSchema);
+
+    return {
+      url: response.url ?? "",
+      title: response.title,
+      refsAvailable: response.refsAvailable
+    };
   }
 
-  async goForward(tabId: string, userId: string): Promise<void> {
-    await this.requestNoContent(`/tabs/${encodeURIComponent(tabId)}/forward`, {
+  async goForward(tabId: string, userId: string): Promise<NavigationActionResponse> {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/forward`, {
       method: "POST",
       body: JSON.stringify({ userId })
-    });
+    }, NavigationActionRawResponseSchema);
+
+    return {
+      url: response.url ?? "",
+      title: response.title,
+      refsAvailable: response.refsAvailable
+    };
   }
 
-  async refresh(tabId: string, userId: string): Promise<void> {
-    await this.requestNoContent(`/tabs/${encodeURIComponent(tabId)}/refresh`, {
+  async refresh(tabId: string, userId: string): Promise<NavigationActionResponse> {
+    const response = await this.requestJson(`/tabs/${encodeURIComponent(tabId)}/refresh`, {
       method: "POST",
       body: JSON.stringify({ userId })
-    });
+    }, NavigationActionRawResponseSchema);
+
+    return {
+      url: response.url ?? "",
+      title: response.title,
+      refsAvailable: response.refsAvailable
+    };
   }
 
   async click(tabId: string, params: ClickParams, userId: string): Promise<ClickResponse> {
@@ -280,7 +346,8 @@ export class CamofoxClient {
 
     return {
       success: response.success ?? true,
-      navigated: response.navigated
+      navigated: response.navigated ?? false,
+      refsAvailable: response.refsAvailable
     };
   }
 
@@ -424,9 +491,14 @@ export class CamofoxClient {
     });
   }
 
-  async snapshot(tabId: string, userId: string): Promise<SnapshotResponse> {
+  async snapshot(tabId: string, userId: string, offset?: number): Promise<SnapshotResponse> {
+    const params = new URLSearchParams({ userId });
+    if (offset !== undefined) {
+      params.set("offset", String(offset));
+    }
+
     const response = await this.requestJson(
-      `/tabs/${encodeURIComponent(tabId)}/snapshot?userId=${encodeURIComponent(userId)}`,
+      `/tabs/${encodeURIComponent(tabId)}/snapshot?${params.toString()}`,
       {
       method: "GET"
       }
@@ -435,8 +507,26 @@ export class CamofoxClient {
     return {
       url: response.url ?? "",
       snapshot: response.snapshot ?? "",
-      refsCount: response.refsCount ?? 0
+      refsCount: response.refsCount ?? 0,
+      truncated: response.truncated,
+      totalChars: response.totalChars,
+      hasMore: response.hasMore,
+      nextOffset: response.nextOffset
     };
+  }
+
+  async youtubeTranscript(url: string, languages?: string[]): Promise<YouTubeTranscriptResponse> {
+    return this.requestJson(
+      "/youtube/transcript",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          url,
+          languages: languages || ["en"]
+        })
+      },
+      YouTubeTranscriptResponseSchema
+    );
   }
 
   async screenshot(tabId: string, userId: string): Promise<Buffer> {
