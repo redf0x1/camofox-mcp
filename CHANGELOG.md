@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.12.0] — 2026-02-27
+
+### Added
+- **`toggle_display` tool** — Switch browser between headless and headed mode via MCP. Enables solving CAPTCHAs by temporarily showing the browser window, then switching back to headless
+
 ## [1.11.2] — 2026-02-27
 
 ### Fixed

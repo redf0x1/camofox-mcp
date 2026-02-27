@@ -129,4 +129,34 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
       }
     }
   );
+
+  server.tool(
+    "toggle_display",
+    "Toggle browser display mode between headless and headed. When encountering CAPTCHAs or issues requiring visual interaction, switch to headed mode (headless: false) to show the browser window. After resolving, switch back to headless mode (headless: true). Note: This restarts the browser context — all tabs are invalidated but cookies/auth persist.",
+    {
+      userId: z.string().min(1).describe("User/session identifier"),
+      headless: z
+        .union([z.boolean(), z.literal("virtual")])
+        .describe("Display mode — false for headed, true for headless, \"virtual\" for virtual display")
+    },
+    async (input: unknown) => {
+      try {
+        const parsed = z
+          .object({
+            userId: z.string().min(1).describe("User/session identifier"),
+            headless: z
+              .union([z.boolean(), z.literal("virtual")])
+              .describe("Display mode — false for headed, true for headless, \"virtual\" for virtual display")
+          })
+          .parse(input);
+
+        const result = await deps.client.toggleDisplay(parsed.userId, parsed.headless);
+        clearTrackedTabsByUserId(parsed.userId);
+
+        return okResult(result);
+      } catch (error) {
+        return toErrorResult(error);
+      }
+    }
+  );
 }

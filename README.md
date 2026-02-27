@@ -56,7 +56,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 42 | 1 | 33 |
+| Tools | 43 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -363,10 +363,10 @@ Use `http://localhost:3000/mcp` as a direct MCP server URL in OpenClaw settings.
 
 OpenClaw's built-in browser uses standard headless Chrome which is easily detected by anti-bot systems. CamoFox provides:
 - **C++ level fingerprint spoofing** — undetectable by bot detection
-- **42 browser automation tools** — navigation, clicks, forms, screenshots, search across 14 engines
+- **43 browser automation tools** — navigation, clicks, forms, screenshots, search across 14 engines
 - **Anti-detection by default** — no configuration needed
 
-## Tools (42)
+## Tools (43)
 
 ### Tab Management
 | Tool | Description |
@@ -468,6 +468,7 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `import_cookies` | Import cookies for authenticated sessions |
 | `get_stats` | Get session statistics and performance metrics |
 | `camofox_close_session` | Close all browser tabs for a user session |
+| `toggle_display` | Toggle browser display mode between headed/headless/virtual (restarts browser context; tabs invalidated, cookies/auth persist) |
 
 ### Session Profiles
 | Tool | Description |
@@ -530,7 +531,7 @@ docker run -i --rm \
 
 ## API Key Setup
 
-The API key is **optional**. All 42 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
+The API key is **optional**. All 43 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
 
 If your CamoFox browser server **has authentication enabled**, these tools need a matching key:
 

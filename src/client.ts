@@ -15,6 +15,7 @@ import type {
   StatsResponse,
   TabResponse
   ,
+  ToggleDisplayResponse,
   YouTubeTranscriptResponse
 } from "./types.js";
 
@@ -186,6 +187,15 @@ const EvaluateResponseSchema = z
     truncated: z.boolean().optional(),
     error: z.string().optional(),
     errorType: z.string().optional()
+  })
+  .passthrough();
+
+const ToggleDisplayResponseSchema = z
+  .object({
+    ok: z.boolean(),
+    headless: z.union([z.boolean(), z.literal("virtual")]),
+    message: z.string(),
+    userId: z.string()
   })
   .passthrough();
 
@@ -489,6 +499,17 @@ export class CamofoxClient {
     await this.requestNoContent(`/sessions/${encodeURIComponent(userId)}`, {
       method: "DELETE"
     });
+  }
+
+  async toggleDisplay(userId: string, headless: boolean | "virtual"): Promise<ToggleDisplayResponse> {
+    return this.requestJson(
+      `/sessions/${encodeURIComponent(userId)}/toggle-display`,
+      {
+        method: "POST",
+        body: JSON.stringify({ headless })
+      },
+      ToggleDisplayResponseSchema
+    );
   }
 
   async snapshot(tabId: string, userId: string, offset?: number): Promise<SnapshotResponse> {

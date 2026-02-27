@@ -107,6 +107,13 @@ export interface StatsResponse {
   [key: string]: unknown;
 }
 
+export interface ToggleDisplayResponse {
+  ok: boolean;
+  headless: boolean | "virtual";
+  message: string;
+  userId: string;
+}
+
 export interface TabInfo {
   tabId: string;
   url: string;
