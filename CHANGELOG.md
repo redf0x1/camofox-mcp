@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.11.2] — 2026-02-27
+
+### Fixed
+- **Snapshot parsing on non-truncated pages** — `nextOffset` Zod schema now accepts `null` (returned by server for non-truncated pages), fixing snapshot/back/forward failures on small pages
+
 ## [1.11.1] — 2026-02-27
 
 ### Fixed

@@ -71,7 +71,7 @@ export interface SnapshotResponse {
   truncated?: boolean;
   totalChars?: number;
   hasMore?: boolean;
-  nextOffset?: number;
+  nextOffset?: number | null;
 }
 
 export interface NavigationActionResponse {

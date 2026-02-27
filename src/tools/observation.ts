@@ -32,7 +32,7 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
           truncated?: boolean;
           totalChars?: number;
           hasMore?: boolean;
-          nextOffset?: number;
+          nextOffset?: number | null;
           truncationInfo?: string;
         } = {
           url: response.url,

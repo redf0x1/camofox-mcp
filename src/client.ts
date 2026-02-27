@@ -98,7 +98,7 @@ const SnapshotRawResponseSchema = z
     truncated: z.boolean().optional(),
     totalChars: z.number().optional(),
     hasMore: z.boolean().optional(),
-    nextOffset: z.number().optional()
+    nextOffset: z.number().nullable().optional()
   })
   .passthrough();
 
