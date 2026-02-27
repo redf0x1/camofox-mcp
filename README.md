@@ -35,6 +35,9 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 - 🔍 **Built-in search** — Search Google, YouTube, Amazon + 11 more engines without getting blocked  
 - 🍪 **Session persistence** — Import cookies, maintain login state across interactions
 - 🎯 **CSS selector fallback** — Target elements even when accessibility refs aren't available
+- 📝 **YouTube transcript extraction** — Extract video transcripts with language selection
+- 📄 **Snapshot pagination for large pages** — Use `offset` with truncation metadata to continue reading content
+- ❤️ **Enhanced health monitoring** — `server_status` includes `consecutiveFailures` and `activeOps`
 
 ### CamoFox MCP vs Playwright MCP
 
@@ -53,7 +56,7 @@ AI agents using Playwright get **blocked constantly**. CAPTCHAs, fingerprint det
 
 | Feature | CamoFox MCP | whit3rabbit/camoufox-mcp | baixianger/camoufox-mcp |
 |---------|:-----------:|:-----------------------:|:-----------------------:|
-| Tools | 41 | 1 | 33 |
+| Tools | 42 | 1 | 33 |
 | Architecture | REST API client | Direct browser | Direct browser |
 | Session persistence | ✅ | ❌ (destroyed per request) | ✅ |
 | Token efficiency | High (snapshots) | Low (raw HTML) | High (snapshots) |
@@ -360,10 +363,10 @@ Use `http://localhost:3000/mcp` as a direct MCP server URL in OpenClaw settings.
 
 OpenClaw's built-in browser uses standard headless Chrome which is easily detected by anti-bot systems. CamoFox provides:
 - **C++ level fingerprint spoofing** — undetectable by bot detection
-- **41 browser automation tools** — navigation, clicks, forms, screenshots, search across 14 engines
+- **42 browser automation tools** — navigation, clicks, forms, screenshots, search across 14 engines
 - **Anti-detection by default** — no configuration needed
 
-## Tools (41)
+## Tools (42)
 
 ### Tab Management
 | Tool | Description |
@@ -448,9 +451,10 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 ### Observation
 | Tool | Description |
 |------|-------------|
-| `snapshot` | Get accessibility tree — PRIMARY way to read pages. Token-efficient |
+| `snapshot` | Get accessibility tree — PRIMARY way to read pages. Token-efficient, supports `offset` pagination for large pages |
 | `screenshot` | Take visual screenshot as base64 PNG |
 | `get_links` | Get all hyperlinks with URLs and text |
+| `youtube_transcript` | Extract transcript from a YouTube video with language selection |
 | `camofox_wait_for_text` | Wait for specific text to appear on the page |
 
 ### Search
@@ -526,7 +530,7 @@ docker run -i --rm \
 
 ## API Key Setup
 
-The API key is **optional**. All 41 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
+The API key is **optional**. All 42 tools work without a key when the CamoFox browser server doesn't enforce authentication (the default for local setups).
 
 If your CamoFox browser server **has authentication enabled**, these tools need a matching key:
 

@@ -1,22 +1,22 @@
 # Changelog
 
-## [1.10.0] - 2026-02-25
+## [1.11.0] — 2026-02-27
 
 ### Added
-- **HTTP Transport**: Streamable HTTP support for OpenClaw and remote MCP clients
-	- New `--transport http` mode alongside existing stdio
-	- Per-request stateless McpServer pattern
-	- Rate limiting (configurable, default 60 req/min)
-	- DNS rebinding protection via MCP SDK
-	- Graceful shutdown with in-flight request handling
-- **OpenClaw Integration Guide**: Comprehensive docs at `docs/openclaw.md`
-- **New config options**: `CAMOFOX_TRANSPORT`, `CAMOFOX_HTTP_PORT`, `CAMOFOX_HTTP_HOST`, `CAMOFOX_HTTP_RATE_LIMIT`
-- **New binary**: `camofox-mcp-http` for direct HTTP mode startup
+- `youtube_transcript` tool — extract transcripts from YouTube videos with language selection
+- Snapshot pagination: `offset` parameter with truncation metadata (`truncated`, `totalChars`, `hasMore`, `nextOffset`)
+- `refsAvailable` field in `navigate`, `click`, `go_back`, `go_forward`, `refresh` responses
+- Health monitoring: `consecutiveFailures` and `activeOps` fields in `server_status` tool
 
-### Fixed
-- Config test assertions updated for extensibility (`.toMatchObject()`)
-- `express-rate-limit` declared as direct dependency
-- Tool count corrected to 41 in documentation
+### Changed
+- Navigation tools (`go_back`, `go_forward`, `refresh`) now return structured JSON with `refsAvailable`
+- Client schemas updated for new response fields (backward-compatible, all new fields optional)
+- Snapshot tool displays truncation info and pagination guidance when pages are large
+
+## [1.10.0] — 2026-02-25
+
+### Added
+- HTTP transport support for OpenClaw integration
 
 ## [1.9.1] — 2026-02-20
 ### Improved
