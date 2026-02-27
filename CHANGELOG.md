@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.11.1] — 2026-02-27
+
+### Fixed
+- Restore `camofox-mcp-http` binary entry accidentally removed in v1.11.0
+
 ## [1.11.0] — 2026-02-27
 
 ### Added
