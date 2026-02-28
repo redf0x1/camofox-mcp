@@ -132,7 +132,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "toggle_display",
-    "Toggle browser display mode between headless and headed. When encountering CAPTCHAs or issues requiring visual interaction, switch to headed mode (headless: false) to show the browser window. After resolving, switch back to headless mode (headless: true). Note: This restarts the browser context — all tabs are invalidated but cookies/auth persist.",
+    "Toggle browser display mode between headless and headed. When encountering CAPTCHAs or issues requiring visual interaction, switch to headed mode (headless: false) to show the browser window. After resolving, switch back to headless mode (headless: true). When switching to virtual or headed mode, the response includes a vncUrl field — open this URL in a browser to see and interact with the browser GUI. Note: This restarts the browser context — all tabs are invalidated but cookies/auth persist.",
     {
       userId: z.string().min(1).describe("User/session identifier"),
       headless: z

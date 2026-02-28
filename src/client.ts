@@ -195,7 +195,8 @@ const ToggleDisplayResponseSchema = z
     ok: z.boolean(),
     headless: z.union([z.boolean(), z.literal("virtual")]),
     message: z.string(),
-    userId: z.string()
+    userId: z.string(),
+    vncUrl: z.string().optional()
   })
   .passthrough();
 

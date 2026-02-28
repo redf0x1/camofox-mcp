@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.13.0] — 2025-07-15
+
+### Added
+- **VNC URL in toggle_display response** — When switching to virtual/headed mode, response includes `vncUrl` for browser viewing
+
 ## [1.12.0] — 2026-02-27
 
 ### Added

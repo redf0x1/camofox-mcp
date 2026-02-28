@@ -112,6 +112,7 @@ export interface ToggleDisplayResponse {
   headless: boolean | "virtual";
   message: string;
   userId: string;
+  vncUrl?: string;
 }
 
 export interface TabInfo {
