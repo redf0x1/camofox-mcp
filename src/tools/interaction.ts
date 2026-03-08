@@ -67,7 +67,7 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
           })
           .parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.typeText(parsed.tabId, { ref: parsed.ref, selector: parsed.selector }, parsed.text, tracked.userId);
+        await deps.client.smartTypeText(parsed.tabId, { ref: parsed.ref, selector: parsed.selector }, parsed.text, tracked.userId);
         incrementToolCall(parsed.tabId);
         return okResult({ success: true });
       } catch (error) {

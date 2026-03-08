@@ -430,7 +430,7 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | Tool | Description |
 |------|-------------|
 | `click` | Click element by ref (from snapshot) or CSS selector |
-| `type_text` | Type text into input fields by ref or CSS selector |
+| `type_text` | Type text into input fields by ref or CSS selector. Supports unlimited text length; for text >= 400 chars, automatically uses JavaScript injection and requires `selector` instead of ref. If the JS fallback is auth-restricted, set `CAMOFOX_API_KEY` |
 | `camofox_press_key` | Press keyboard keys (Enter, Tab, Escape, etc.) |
 | `scroll` | Scroll page up or down by pixel amount |
 | `camofox_scroll_element` | Scroll inside a container element (modal, sidebar, scrollable div) |
@@ -455,7 +455,9 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `screenshot` | Take visual screenshot as base64 PNG |
 | `get_links` | Get all hyperlinks with URLs and text |
 | `youtube_transcript` | Extract transcript from a YouTube video with language selection |
+| `camofox_get_page_html` | Retrieve the live rendered DOM HTML via JavaScript. Useful when snapshot refs miss dynamically rendered SPA/custom-component content. Requires `CAMOFOX_API_KEY` |
 | `camofox_wait_for_text` | Wait for specific text to appear on the page |
+| `camofox_wait_for_selector` | Poll until a CSS selector matches an element, with configurable timeout. Useful for SPA hydration and async content loading. Requires `CAMOFOX_API_KEY` |
 
 ### Search
 | Tool | Description |

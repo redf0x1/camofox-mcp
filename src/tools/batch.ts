@@ -66,7 +66,7 @@ export function registerBatchTools(server: McpServer, deps: ToolDeps): void {
         for (let index = 0; index < parsed.fields.length; index += 1) {
           const field = parsed.fields[index];
           try {
-            await deps.client.typeText(parsed.tabId, { ref: field.ref, selector: field.selector }, field.text, tracked.userId);
+            await deps.client.smartTypeText(parsed.tabId, { ref: field.ref, selector: field.selector }, field.text, tracked.userId);
             results.push({ index, ref: field.ref, selector: field.selector, success: true });
           } catch (error) {
             const appError = normalizeError(error);
@@ -131,7 +131,7 @@ export function registerBatchTools(server: McpServer, deps: ToolDeps): void {
           .parse(input);
 
         const tracked = getTrackedTab(parsed.tabId);
-        await deps.client.typeText(parsed.tabId, { ref: parsed.ref, selector: parsed.selector }, parsed.text, tracked.userId);
+        await deps.client.smartTypeText(parsed.tabId, { ref: parsed.ref, selector: parsed.selector }, parsed.text, tracked.userId);
         await deps.client.pressKey(parsed.tabId, parsed.key, tracked.userId);
         incrementToolCall(parsed.tabId);
 

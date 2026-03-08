@@ -56,7 +56,7 @@ describe("tools/batch", () => {
   beforeEach(() => {
     deps = {
       client: {
-        typeText: vi.fn(),
+        smartTypeText: vi.fn(),
         click: vi.fn()
       } as unknown as ToolDeps["client"],
       config: loadConfig([], { CAMOFOX_URL: "http://test-camofox:9377" } as NodeJS.ProcessEnv)
@@ -77,7 +77,7 @@ describe("tools/batch", () => {
       createdTabIds.push(tabId);
       trackTab(makeTab(tabId));
 
-      (deps.client.typeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (deps.client.smartTypeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
       const { server, getHandler } = makeServerCapture();
       registerBatchTools(server as unknown as Parameters<typeof registerBatchTools>[0], deps);
@@ -101,7 +101,7 @@ describe("tools/batch", () => {
       expect(payload.results).toHaveLength(2);
       expect(payload.results.map((r: any) => r.success)).toEqual([true, true]);
 
-      expect(deps.client.typeText).toHaveBeenCalledTimes(2);
+      expect(deps.client.smartTypeText).toHaveBeenCalledTimes(2);
       expect(deps.client.click).not.toHaveBeenCalled();
 
       expect(getTrackedTab(tabId).toolCalls).toBe(1);
@@ -112,7 +112,7 @@ describe("tools/batch", () => {
       createdTabIds.push(tabId);
       trackTab(makeTab(tabId));
 
-      (deps.client.typeText as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("bad field"));
+      (deps.client.smartTypeText as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("bad field"));
 
       const { server, getHandler } = makeServerCapture();
       registerBatchTools(server as unknown as Parameters<typeof registerBatchTools>[0], deps);
@@ -137,7 +137,7 @@ describe("tools/batch", () => {
       expect(payload.results).toHaveLength(1);
       expect(payload.results[0]).toMatchObject({ index: 0, success: false, error: "bad field" });
 
-      expect(deps.client.typeText).toHaveBeenCalledTimes(1);
+      expect(deps.client.smartTypeText).toHaveBeenCalledTimes(1);
       expect(deps.client.click).not.toHaveBeenCalled();
 
       expect(getTrackedTab(tabId).toolCalls).toBe(0);
@@ -148,10 +148,10 @@ describe("tools/batch", () => {
       createdTabIds.push(tabId);
       trackTab(makeTab(tabId));
 
-      const typeText = deps.client.typeText as unknown as ReturnType<typeof vi.fn>;
-      typeText.mockResolvedValueOnce(undefined);
-      typeText.mockRejectedValueOnce(new Error("nope"));
-      typeText.mockResolvedValueOnce(undefined);
+      const smartTypeText = deps.client.smartTypeText as unknown as ReturnType<typeof vi.fn>;
+      smartTypeText.mockResolvedValueOnce(undefined);
+      smartTypeText.mockRejectedValueOnce(new Error("nope"));
+      smartTypeText.mockResolvedValueOnce(undefined);
 
       const { server, getHandler } = makeServerCapture();
       registerBatchTools(server as unknown as Parameters<typeof registerBatchTools>[0], deps);
@@ -178,7 +178,7 @@ describe("tools/batch", () => {
       expect(payload.results.map((r: any) => r.success)).toEqual([true, false]);
       expect(payload.results[1]).toMatchObject({ index: 1, success: false, error: "nope" });
 
-      expect(deps.client.typeText).toHaveBeenCalledTimes(2);
+      expect(deps.client.smartTypeText).toHaveBeenCalledTimes(2);
       expect(deps.client.click).not.toHaveBeenCalled();
       expect(getTrackedTab(tabId).toolCalls).toBe(0);
     });
@@ -188,7 +188,7 @@ describe("tools/batch", () => {
       createdTabIds.push(tabId);
       trackTab(makeTab(tabId));
 
-      (deps.client.typeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (deps.client.smartTypeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
       (deps.client.click as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
       const { server, getHandler } = makeServerCapture();
@@ -212,7 +212,7 @@ describe("tools/batch", () => {
         total: 2,
         submitted: true
       });
-      expect(deps.client.typeText).toHaveBeenCalledTimes(2);
+      expect(deps.client.smartTypeText).toHaveBeenCalledTimes(2);
       expect(deps.client.click).toHaveBeenCalledTimes(1);
       expect(deps.client.click).toHaveBeenCalledWith(
         tabId,
@@ -227,7 +227,7 @@ describe("tools/batch", () => {
       createdTabIds.push(tabId);
       trackTab(makeTab(tabId));
 
-      (deps.client.typeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
+      (deps.client.smartTypeText as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
       (deps.client.click as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("submit failed"));
 
       const { server, getHandler } = makeServerCapture();
@@ -251,7 +251,7 @@ describe("tools/batch", () => {
       });
       expect(String(payload.message)).toContain("submit failed");
 
-      expect(deps.client.typeText).toHaveBeenCalledTimes(2);
+      expect(deps.client.smartTypeText).toHaveBeenCalledTimes(2);
       expect(deps.client.click).toHaveBeenCalledTimes(1);
       expect(getTrackedTab(tabId).toolCalls).toBe(0);
     });
@@ -277,7 +277,7 @@ describe("tools/batch", () => {
         code: "VALIDATION_ERROR"
       });
 
-      expect(deps.client.typeText).not.toHaveBeenCalled();
+      expect(deps.client.smartTypeText).not.toHaveBeenCalled();
       expect(deps.client.click).not.toHaveBeenCalled();
       expect(getTrackedTab(tabId).toolCalls).toBe(0);
     });

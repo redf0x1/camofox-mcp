@@ -200,6 +200,60 @@ const ToggleDisplayResponseSchema = z
   })
   .passthrough();
 
+const LONG_TEXT_THRESHOLD = parseInt(process.env.CAMOFOX_LONG_TEXT_THRESHOLD || "400", 10);
+
+function buildLongTextEvaluateExpression(selector: string, text: string): string {
+  return `(() => {
+    const selector = ${JSON.stringify(selector)};
+    const text = ${JSON.stringify(text)};
+    const element = document.querySelector(selector);
+
+    if (!element) {
+      throw new Error("Element not found for selector: " + selector);
+    }
+
+    if (element instanceof HTMLInputElement) {
+      const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      if (!valueSetter) {
+        throw new Error("Unable to set input value");
+      }
+      valueSetter.call(element, text);
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
+      return { applied: true, mode: "input" };
+    }
+
+    if (element instanceof HTMLTextAreaElement) {
+      const valueSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set;
+      if (!valueSetter) {
+        throw new Error("Unable to set textarea value");
+      }
+      valueSetter.call(element, text);
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
+      return { applied: true, mode: "textarea" };
+    }
+
+    if (element instanceof HTMLElement && element.isContentEditable) {
+      element.focus();
+
+      const inserted = typeof document.execCommand === "function"
+        ? document.execCommand("insertText", false, text)
+        : false;
+
+      if (!inserted) {
+        element.textContent = text;
+      }
+
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
+      return { applied: true, mode: "contenteditable" };
+    }
+
+    throw new Error("Long text fallback supports input, textarea, or contenteditable elements only");
+  })()`;
+}
+
 const CookieExportSchema = z
   .object({
     name: z.string(),
@@ -367,6 +421,49 @@ export class CamofoxClient {
       method: "POST",
       body: JSON.stringify({ ...locator, text, userId })
     });
+  }
+
+  async smartTypeText(tabId: string, locator: { ref?: string; selector?: string }, text: string, userId: string): Promise<void> {
+    if (text.length < LONG_TEXT_THRESHOLD) {
+      await this.typeText(tabId, locator, text, userId);
+      return;
+    }
+
+    if (locator.ref && !locator.selector) {
+      throw new AppError(
+        "VALIDATION_ERROR",
+        "Long text with ref-only is not supported; please provide a CSS selector for long text input"
+      );
+    }
+
+    if (!locator.selector) {
+      throw new AppError("VALIDATION_ERROR", "A CSS selector is required for long text input");
+    }
+
+    try {
+      const result = await this.evaluate(
+        tabId,
+        buildLongTextEvaluateExpression(locator.selector, text),
+        userId
+      );
+
+      if (!result.ok) {
+        throw new AppError(
+          /element|selector/i.test(result.error ?? "") ? "ELEMENT_NOT_FOUND" : "INTERNAL_ERROR",
+          result.error ?? "Long text input failed"
+        );
+      }
+    } catch (error) {
+      if (error instanceof AppError && error.code === "API_KEY_REQUIRED") {
+        throw new AppError(
+          "API_KEY_REQUIRED",
+          "Evaluate fallback requires API key. Set CAMOFOX_API_KEY for long text support.",
+          error.status
+        );
+      }
+
+      throw error;
+    }
   }
 
   async pressKey(tabId: string, key: string, userId: string): Promise<void> {
