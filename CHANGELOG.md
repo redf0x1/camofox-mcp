@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.13.1] - 2026-03-08
+
+### Added
+- `camofox_get_page_html` tool — retrieves live rendered DOM HTML with optional CSS selector scoping
+- `camofox_wait_for_selector` tool — poll-based CSS selector wait for SPA dynamic content
+- `camofox_query_selector` tool — purpose-built DOM element querying (text, HTML, attributes)
+- `smartTypeText()` — hybrid text entry: keystrokes for short text, evaluate fallback for long text
+- `CAMOFOX_LONG_TEXT_THRESHOLD` environment variable for configurable typing threshold
+
+### Fixed
+- Text input no longer has any character length limitations
+- ContentEditable elements use `document.execCommand('insertText')` for rich text compatibility
+- Ref-only long text now returns an actionable error message instead of silent failure
+
+### Changed
+- Updated `type_text` and batch `type` actions to use hybrid text entry
+- Updated `camofox_snapshot` description to clarify accessibility tree limitations and recommend CSS selectors for SPAs
+- Updated README documentation with new tools and long-text behavior
+
 ## [1.13.0] — 2025-07-15
 
 ### Added

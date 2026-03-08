@@ -438,6 +438,8 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `camofox_wait_for` | Wait for page readiness after navigation or dynamic updates |
 | `camofox_evaluate_js` | Execute JavaScript in page context (may require API key) |
 
+Long text entry has no character limit. `type_text` and batch `type` actions keep short text as normal keystrokes for anti-detection, then switch to DOM insertion for longer input.
+
 ### Batch / Composite
 | Tool | Description |
 |------|-------------|
@@ -456,6 +458,7 @@ Tip: call `list_presets` to discover what presets the connected server supports 
 | `get_links` | Get all hyperlinks with URLs and text |
 | `youtube_transcript` | Extract transcript from a YouTube video with language selection |
 | `camofox_get_page_html` | Retrieve the live rendered DOM HTML via JavaScript. Useful when snapshot refs miss dynamically rendered SPA/custom-component content. Requires `CAMOFOX_API_KEY` |
+| `camofox_query_selector` | Query a CSS selector in the live DOM and return element details or a specific attribute. Useful for targeted inspection without writing raw JavaScript. Requires `CAMOFOX_API_KEY` |
 | `camofox_wait_for_text` | Wait for specific text to appear on the page |
 | `camofox_wait_for_selector` | Poll until a CSS selector matches an element, with configurable timeout. Useful for SPA hydration and async content loading. Requires `CAMOFOX_API_KEY` |
 
@@ -604,6 +607,7 @@ If the browser server **does** enforce auth and no key is set, cookie import, pr
 | `CAMOFOX_URL` | `http://localhost:9377` | CamoFox server URL |
 | `CAMOFOX_TIMEOUT` | `30000` | Request timeout in ms |
 | `CAMOFOX_API_KEY` | — | Shared secret for authenticated operations. Only needed if the CamoFox browser server enforces auth |
+| `CAMOFOX_LONG_TEXT_THRESHOLD` | `400` | Character count where `type_text` switches from keystrokes to DOM insertion for long text |
 | `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | Directory to store persistent session profiles |
 | `CAMOFOX_AUTO_SAVE` | `true` | Auto-save on close + auto-load on create via `_auto_{userId}` |
 | `CAMOFOX_DEFAULT_USER_ID` | `default` | Default userId for new tabs when none specified |
