@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/redf0x1-camofox-mcp-badge.png)](https://mseep.ai/app/redf0x1-camofox-mcp)
+
 # CamoFox MCP
 
 AI-powered anti-detection browser automation for MCP-compatible AI agents.
