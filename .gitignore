@@ -3,3 +3,7 @@ dist/
 *.tgz
 .env
 .DS_Store
+.claude
+AGENTS.md
+docs/
+CLAUDE.md
