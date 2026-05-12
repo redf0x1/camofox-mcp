@@ -73,6 +73,30 @@ describe("prompts", () => {
     expect(withSymptomText.text).toContain("Symptom: connection refused");
   });
 
+  it("setup verification does not treat a cold browser session as a hard stop", () => {
+    const server = {
+      registerPrompt: vi.fn()
+    };
+
+    registerPrompts(server as unknown as Parameters<typeof registerPrompts>[0], deps);
+
+    const setupCall = server.registerPrompt.mock.calls.find((call) => call[0] === "setup-verify");
+    if (!setupCall) {
+      throw new Error("Expected setup-verify prompt to be registered");
+    }
+
+    const cb = setupCall[2] as () => unknown;
+    const setup = cb();
+    const setupText = GetPromptResultSchema.parse(setup).messages[0]?.content;
+    if (!setupText || setupText.type !== "text") {
+      throw new Error("Expected text content");
+    }
+
+    expect(setupText.text).not.toContain("If connected:");
+    expect(setupText.text).toContain("If reachable but no browser session is active");
+    expect(setupText.text).toContain("continue with `create_tab`");
+  });
+
   it("quick-start prompt handles optional task arg", () => {
     const server = {
       registerPrompt: vi.fn()

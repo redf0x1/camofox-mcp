@@ -67,7 +67,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 
 | Name | Description | Parameters | Returns | Requires API Key | Example |
 | --- | --- | --- | --- | --- | --- |
-| `server_status` | Verify that CamoFox Browser is reachable and report current server state. | None. | `ok`, `running`, `browserConnected`, `version`, `consecutiveFailures`, `activeOps`, `activeTabCount`. | No | `server_status({})` |
+| `server_status` | Verify that CamoFox Browser is reachable and report current server state. | None. | `ok`, `running`, `reachable`, `browserConnected`, `browserSessionActive`, `version`, `consecutiveFailures`, `activeOps`, `activeTabCount`, `guidance?`. | No | `server_status({})` |
 
 ## Tab Management
 

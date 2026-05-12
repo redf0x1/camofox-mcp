@@ -147,7 +147,8 @@ curl -fsS http://localhost:9377/health
 Verify my CamoFox MCP setup.
 
 1) Call `server_status`.
-2) If connected, call `create_tab` with `url: https://example.com`.
+2) If the browser server is reachable, call `create_tab` with `url: https://example.com`.
+   A cold server can report no active browser session before the first tab is created.
 3) Call `navigate_and_snapshot` and wait for the text "Example Domain".
 4) Call `list_profiles`.
 5) Call `close_tab` for the test tab.

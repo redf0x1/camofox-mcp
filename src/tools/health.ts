@@ -9,14 +9,25 @@ export function registerHealthTools(server: McpServer, deps: ToolDeps): void {
     try {
       const health = await deps.client.healthCheck();
       const activeTabCount = listTrackedTabs().length;
+      const running = health.running ?? health.browserConnected ?? false;
+      const reachable = health.ok === true;
+      const browserSessionActive = health.browserConnected;
+      const guidance =
+        reachable && !browserSessionActive
+          ? "CamoFox Browser is reachable, but no browser session is active yet. Continue with create_tab to start a session."
+          : undefined;
+
       return okResult({
         ok: health.ok,
-        running: health.running ?? health.browserConnected ?? false,
+        running,
+        reachable,
         browserConnected: health.browserConnected,
+        browserSessionActive,
         version: health.version ?? "unknown",
         consecutiveFailures: health.consecutiveFailures,
         activeOps: health.activeOps,
-        activeTabCount
+        activeTabCount,
+        guidance
       });
     } catch (error) {
       return toErrorResult(error);

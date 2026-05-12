@@ -17,8 +17,9 @@ export function registerPrompts(server: McpServer, deps: ToolDeps): void {
             type: "text" as const,
             text: `Verify my CamoFox MCP setup (server URL: ${deps.config.camofoxUrl}). Run these checks and report results:
 
-1) Call \`server_status\` — is the browser server connected?
-2) If connected: \`create_tab\` with url \`https://example.com\` and userId \`setup-test\`
+1) Call \`server_status\` — verify the browser server is reachable.
+   If reachable but no browser session is active, continue with \`create_tab\`; a cold server may report no active browser session before the first tab.
+2) \`create_tab\` with url \`https://example.com\` and userId \`setup-test\`
 3) \`navigate_and_snapshot\` on that tab (wait for text: "Example Domain")
 4) \`list_profiles\` to confirm profile storage is accessible
 5) \`close_tab\` for the test tab
@@ -48,8 +49,8 @@ Report: ✅ pass or ❌ fail for each step, plus overall status.`
             text: `Something isn't working with my CamoFox setup.${args.symptom ? ` Symptom: ${args.symptom}` : ""}
 
 Please diagnose:
-1) Call \`server_status\` — check browser server connection
-2) If connected, try \`create_tab\` and navigate to any URL
+1) Call \`server_status\` — check whether the browser server is reachable
+2) If reachable, try \`create_tab\` and navigate to any URL. A reachable cold server can report no active browser session until this step succeeds.
 3) If that works, try \`import_cookies\` with a simple test cookie
 4) Report what's working and what's failing
 5) Suggest specific fixes for any issues found

@@ -72,7 +72,8 @@ Verify the browser server is reachable:
 curl -fsS http://localhost:9377/health
 ```
 
-Expected response includes `"ok":true` and `"browserConnected":true`.
+Expected response includes `"ok":true` and `"running":true`.
+On a cold server with no active tabs yet, `browserConnected` can be `false`; create a tab to start a browser session.
 
 ## Tool Categories
 
