@@ -39,7 +39,7 @@ function parseCsvList(raw: string | undefined): string[] | undefined {
   return values.length > 0 ? values : undefined;
 }
 
-function isLoopbackHost(host: string): boolean {
+export function isLoopbackHost(host: string): boolean {
   const normalized = host.trim().toLowerCase().replace(/^\[(.*)\]$/, "$1");
 
   if (normalized === "localhost" || normalized === "::1" || normalized === "0:0:0:0:0:0:0:1") {

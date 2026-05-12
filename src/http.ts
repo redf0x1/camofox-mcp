@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 
-import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import { InvalidTokenError } from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
+import { hostHeaderValidation } from "@modelcontextprotocol/sdk/server/middleware/hostHeaderValidation.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import express, { type Express } from "express";
 import rateLimit from "express-rate-limit";
 import { createHash, timingSafeEqual } from "node:crypto";
+import type { Server as HttpServer } from "node:http";
 import { fileURLToPath } from "node:url";
 
 import { CamofoxClient } from "./client.js";
-import { loadConfig } from "./config.js";
+import { isLoopbackHost, loadConfig } from "./config.js";
 import { createServer } from "./server.js";
 import { getAllTrackedTabs, removeTrackedTab, setupCleanup } from "./state.js";
 import type { Config } from "./types.js";
 
-let httpServer: ReturnType<ReturnType<typeof createMcpExpressApp>["listen"]> | null = null;
+let httpServer: HttpServer | null = null;
 let cleanupClient: CamofoxClient | null = null;
 let cleanupInitialized = false;
 let httpSignalHandlersRegistered = false;
@@ -40,6 +42,23 @@ function createStaticTokenVerifier(expectedToken: string) {
       };
     }
   };
+}
+
+function hostHeaderValue(host: string): string {
+  const normalized = host.trim().toLowerCase().replace(/^\[(.*)\]$/, "$1");
+  return normalized.includes(":") ? `[${normalized}]` : normalized;
+}
+
+function getAllowedHostHeaders(config: Config): string[] | undefined {
+  if (config.httpAllowedHosts) {
+    return config.httpAllowedHosts;
+  }
+
+  if (isLoopbackHost(config.httpHost)) {
+    return Array.from(new Set(["localhost", "127.0.0.1", "[::1]", hostHeaderValue(config.httpHost)]));
+  }
+
+  return undefined;
 }
 
 function ensureHttpSignalHandlers(): void {
@@ -95,22 +114,21 @@ export async function startHttpServer(config: Config = loadConfig()): Promise<vo
   }
 
   await new Promise<void>((resolve, reject) => {
-    httpServer = app.listen(config.httpPort, config.httpHost, () => {
+    const server = app.listen(config.httpPort, config.httpHost, () => {
       console.error(
         `[camofox-mcp] HTTP transport listening on http://${config.httpHost}:${config.httpPort}/mcp (rate limit: ${config.httpRateLimit} req/min)`
       );
       resolve();
     });
 
-    httpServer.on("error", reject);
+    httpServer = server;
+    server.on("error", reject);
   });
 }
 
-export function createMcpHttpApp(config: Config): ReturnType<typeof createMcpExpressApp> {
-  const app = createMcpExpressApp({
-    host: config.httpHost,
-    allowedHosts: config.httpAllowedHosts
-  });
+export function createMcpHttpApp(config: Config): Express {
+  const app = express();
+  const allowedHostHeaders = getAllowedHostHeaders(config);
 
   const limiter = rateLimit({
     windowMs: 60_000,
@@ -118,6 +136,15 @@ export function createMcpHttpApp(config: Config): ReturnType<typeof createMcpExp
     standardHeaders: true,
     legacyHeaders: false
   });
+
+  if (allowedHostHeaders) {
+    app.use(hostHeaderValidation(allowedHostHeaders));
+  } else if (config.httpHost === "0.0.0.0" || config.httpHost === "::") {
+    console.warn(
+      `Warning: Server is binding to ${config.httpHost} without DNS rebinding protection. ` +
+        "Set CAMOFOX_HTTP_ALLOWED_HOSTS when possible; CAMOFOX_HTTP_API_KEY is still required for this bind."
+    );
+  }
 
   app.use("/mcp", limiter);
 
@@ -130,6 +157,8 @@ export function createMcpHttpApp(config: Config): ReturnType<typeof createMcpExp
       })
     );
   }
+
+  app.use("/mcp", express.json());
 
   app.post("/mcp", async (req: any, res: any) => {
     try {
