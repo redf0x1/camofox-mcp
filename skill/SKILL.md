@@ -1,8 +1,8 @@
 ---
 name: skill
 title: CamoFox MCP for OpenClaw
-version: 1.10.0
-description: Anti-detection browser automation MCP skill for OpenClaw agents with 41 tools for navigation, interaction, extraction, downloads, profiles, sessions, and stealth web search.
+version: 1.13.2
+description: Anti-detection browser automation MCP skill for OpenClaw agents with 46 tools for navigation, interaction, observation, extraction, downloads, profiles, sessions, and stealth web search.
 author: redf0x1
 tags:
   - mcp
@@ -16,7 +16,7 @@ license: MIT
 homepage: https://github.com/redf0x1/camofox-mcp#readme
 metadata:
   title: CamoFox MCP for OpenClaw
-  version: 1.10.0
+  version: 1.13.2
   author: redf0x1
   tags:
     - mcp
@@ -52,14 +52,15 @@ CamoFox Browser must be running first (default `http://localhost:9377`).
 ### 2) Start CamoFox MCP in HTTP mode
 
 ```bash
-CAMOFOX_TRANSPORT=http npx camofox-mcp@1.10.0
+CAMOFOX_TRANSPORT=http npx camofox-mcp@1.13.2
 ```
 
 Optional examples:
 
 ```bash
-CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=your-key npx camofox-mcp@1.10.0
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.10.0
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.13.2
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.13.2
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.13.2
 ```
 
 ### 3) Configure OpenClaw
@@ -95,7 +96,7 @@ Use this skill when the user asks for tasks like:
 - “Run web search in browser and summarize results”
 - “Download files and return metadata/content”
 
-## Tool catalog (41 tools)
+## Tool catalog (46 tools)
 
 ### Health (1)
 
@@ -125,12 +126,16 @@ Use this skill when the user asks for tasks like:
 - `camofox_wait_for` — Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes.
 - `camofox_press_key` — Press a keyboard key. Use after type_text to submit forms (Enter), navigate between elements (Tab), move through suggestions (ArrowDown/ArrowUp), or dismiss dialogs (Escape). Common keys: Enter, Tab, Escape, ArrowDown, ArrowUp, Backspace, Space.
 
-### Observation (4)
+### Observation (8)
 
 - `snapshot` — Get accessibility tree snapshot — the PRIMARY way to read page content. Returns element refs, roles, names and values. Token-efficient. Always prefer over screenshot. Element refs are used with click and type_text.
 - `screenshot` — Take visual screenshot in base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.
 - `get_links` — Get all hyperlinks on page with URLs and text. Useful for navigation discovery and site mapping.
+- `camofox_get_page_html` — Get rendered HTML from the live DOM. Use when accessibility snapshots miss dynamic or custom component content.
+- `camofox_query_selector` — Query a CSS selector in the live DOM and return element text, HTML, attributes, and visibility metadata.
 - `camofox_wait_for_text` — Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading.
+- `camofox_wait_for_selector` — Wait for a CSS selector to appear in the live DOM. Useful for SPA and async-content workflows.
+- `youtube_transcript` — Fetch a YouTube transcript without opening a browser tab.
 
 ### Downloads (3)
 
@@ -148,11 +153,12 @@ Use this skill when the user asks for tasks like:
 
 - `web_search` — Search the web via 14 engines: google, youtube, amazon, bing, duckduckgo, reddit, github, stackoverflow, wikipedia, twitter, linkedin, facebook, instagram, tiktok. Call snapshot after to read results.
 
-### Session (3)
+### Session (4)
 
 - `import_cookies` — Import cookies for authenticated sessions. Provide cookies in a JSON string array. Restores login sessions without re-auth. Requires userId.
 - `get_stats` — Get session statistics: request counts, active tabs, uptime, performance metrics.
 - `camofox_close_session` — Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.
+- `toggle_display` — Switch a user session between headless, headed, and virtual display modes and return a VNC URL when available.
 
 ### Batch workflows (6)
 
@@ -177,7 +183,7 @@ Use this skill when the user asks for tasks like:
 ## What makes CamoFox unique
 
 - Stealth-first architecture for AI agents that need reliability on hostile sites
-- Rich tool surface (41 tools) combining low-level controls + high-level workflows
+- Rich tool surface (46 tools) combining low-level controls + high-level workflows
 - Snapshot-first design that reduces token burn while preserving actionable context
 - Built-in profile/session controls for long-running authenticated automations
 - Native HTTP MCP endpoint for OpenClaw and remote MCP-compatible clients

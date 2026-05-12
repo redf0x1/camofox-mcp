@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.13.2] - 2026-05-12
+
+### Added
+- `CAMOFOX_HTTP_API_KEY` for inbound HTTP MCP Bearer authentication.
+- `CAMOFOX_HTTP_ALLOWED_HOSTS` / `--http-allowed-hosts` for HTTP Host header allowlisting.
+- Private vulnerability reporting policy in `SECURITY.md`.
+
+### Fixed
+- HTTP transport now fails startup when bound beyond loopback without an inbound HTTP API key.
+- `server_status` now distinguishes browser-server reachability from an active browser session.
+- Docker HTTP transport examples now use the image's `8080` container port and bind HTTP transport to `0.0.0.0` with inbound Bearer authentication.
+- Public server metadata now reflects the current release and 46 registered tools.
+
 ## [1.13.1] - 2026-03-08
 
 ### Added

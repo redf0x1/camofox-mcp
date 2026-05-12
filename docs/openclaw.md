@@ -71,9 +71,9 @@ Use MCPorter to bridge MCP servers to OpenClaw skills format.
 
 Enter `http://localhost:3000/mcp` as a custom MCP server URL in OpenClaw settings.
 
-## Available Tools (41)
+## Available Tools (46)
 
-CamoFox MCP provides 41 browser automation tools:
+CamoFox MCP provides 46 browser automation tools:
 
 ### Navigation
 - `navigate` — Navigate to URL

@@ -1,5 +1,5 @@
 name: camofox-mcp
-version: 1.10.0
+version: 1.13.2
 description: Anti-detection browser MCP server for AI agents — navigate, interact, and automate the web without getting blocked
 author: redf0x1
 license: MIT
@@ -25,7 +25,7 @@ prerequisites:
     description: CamoFox Browser server must be running (default http://localhost:9377)
   - name: Start command
     required: true
-    description: Start MCP server in HTTP mode with CAMOFOX_TRANSPORT=http npx camofox-mcp@1.10.0
+    description: Start MCP server in HTTP mode with CAMOFOX_TRANSPORT=http npx camofox-mcp@1.13.2
 
 tools:
   - name: server_status
@@ -70,8 +70,16 @@ tools:
     description: Capture visual screenshot as base64 PNG.
   - name: get_links
     description: Extract hyperlinks from page with optional filtering.
+  - name: camofox_get_page_html
+    description: Get rendered HTML from the live DOM.
+  - name: camofox_query_selector
+    description: Query a CSS selector in the live DOM.
   - name: camofox_wait_for_text
     description: Wait until specified text appears on page.
+  - name: camofox_wait_for_selector
+    description: Wait until a CSS selector appears in the live DOM.
+  - name: youtube_transcript
+    description: Fetch a YouTube transcript without opening a browser tab.
 
   - name: list_downloads
     description: List downloads with filters for status/type/size.
@@ -96,6 +104,8 @@ tools:
     description: Return session usage and performance statistics.
   - name: camofox_close_session
     description: Close all tabs for a user session.
+  - name: toggle_display
+    description: Switch a user session between headless, headed, and virtual display modes.
 
   - name: fill_form
     description: Fill multiple fields in one operation with optional submit click.

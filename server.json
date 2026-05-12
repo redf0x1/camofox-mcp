@@ -1,21 +1,21 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 41 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 46 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
   },
   "version_detail": {
-    "version": "1.10.0",
-    "release_date": "2026-02-25",
+    "version": "1.13.2",
+    "release_date": "2026-05-12",
     "is_stable": true
   },
   "packages": [
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.10.0",
+      "version": "1.13.2",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -62,6 +62,16 @@
           "default": "60"
         },
         {
+          "name": "CAMOFOX_HTTP_API_KEY",
+          "description": "Inbound HTTP MCP Bearer token; required when HTTP transport binds beyond loopback",
+          "required": false
+        },
+        {
+          "name": "CAMOFOX_HTTP_ALLOWED_HOSTS",
+          "description": "Comma-separated Host header allowlist for HTTP transport",
+          "required": false
+        },
+        {
           "name": "CAMOFOX_PROFILES_DIR",
           "description": "Custom profiles directory for session persistence",
           "required": false,
@@ -74,11 +84,14 @@
     {"name": "batch_click", "description": "Click multiple elements sequentially. Continues on error (clicks are independent). Returns per-click results."},
     {"name": "camofox_close_session", "description": "Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Any tab ID from the session to identify the user"}}, "required": ["tabId"], "additionalProperties": false}},
     {"name": "camofox_evaluate_js", "description": "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured."},
+    {"name": "camofox_get_page_html", "description": "Get rendered HTML from the live DOM. Use when accessibility snapshots miss dynamic or custom component content."},
     {"name": "camofox_hover", "description": "Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "ref": {"type": "string", "description": "Element ref from snapshot (e.g. 'e5')"}, "selector": {"type": "string", "description": "CSS selector (e.g. '#menu-item', '.dropdown-trigger')"}}, "required": ["tabId"], "additionalProperties": false}},
     {"name": "camofox_press_key", "description": "Press a keyboard key. Use after type_text to submit forms (Enter), navigate between elements (Tab), move through suggestions (ArrowDown/ArrowUp), or dismiss dialogs (Escape). Common keys: Enter, Tab, Escape, ArrowDown, ArrowUp, Backspace, Space."},
+    {"name": "camofox_query_selector", "description": "Query a CSS selector in the live DOM and return element text, HTML, attributes, and visibility metadata."},
     {"name": "camofox_scroll_element", "description": "Scroll a specific container element (modal dialog, scrollable div, sidebar). Use when page-level scroll doesn't reach content inside modals or overflow containers. Returns scroll position metadata to track progress."},
     {"name": "camofox_scroll_element_and_snapshot", "description": "Scroll a container element AND take a snapshot. Combines scroll_element + snapshot in one call. Perfect for incrementally loading lazy content in modals (e.g. Facebook group post comments). Returns both scroll position and page snapshot."},
     {"name": "camofox_wait_for", "description": "Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "timeout": {"type": "number", "description": "Timeout in ms (default: 10000)"}, "waitForNetwork": {"type": "boolean", "description": "Wait for network idle (default: true)"}}, "required": ["tabId"], "additionalProperties": false}},
+    {"name": "camofox_wait_for_selector", "description": "Wait for a CSS selector to appear in the live DOM. Useful for SPA and async-content workflows."},
     {"name": "camofox_wait_for_text", "description": "Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading.", "inputSchema": {"type": "object", "properties": {"tabId": {"type": "string", "description": "Tab ID"}, "text": {"type": "string", "description": "Text to wait for"}, "timeout": {"type": "number", "description": "Timeout in ms (default: 10000)"}}, "required": ["tabId", "text"], "additionalProperties": false}},
     {"name": "click", "description": "Click an element. Provide either ref (from snapshot) or CSS selector. Use snapshot first to discover element refs."},
     {"name": "close_tab", "description": "Close a browser tab and release resources. Always close tabs when done to free memory."},
@@ -109,9 +122,11 @@
     {"name": "server_status", "description": "Check CamoFox server health and browser connection. Call first to verify server is running. Returns version, browser status, and active tab count."},
     {"name": "snapshot", "description": "Get accessibility tree snapshot — the PRIMARY way to read page content. Returns element refs, roles, names and values. Token-efficient. Always prefer over screenshot. Element refs are used with click and type_text."},
     {"name": "resolve_blobs", "description": "Resolve blob: URLs to downloadable base64 data. Blob URLs are temporary browser objects (common in Telegram, WhatsApp, Discord) that cannot be downloaded directly. This tool converts them to base64 data URIs."},
+    {"name": "toggle_display", "description": "Switch a user session between headless, headed, and virtual display modes and return a VNC URL when available."},
     {"name": "type_and_submit", "description": "Type text into a field and press a key (default: Enter). Useful for search boxes and single-field forms."},
     {"name": "type_text", "description": "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; use selector as fallback when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element."},
-    {"name": "web_search", "description": "Search the web via 14 engines: google, youtube, amazon, bing, duckduckgo, reddit, github, stackoverflow, wikipedia, twitter, linkedin, facebook, instagram, tiktok. Call snapshot after to read results."}
+    {"name": "web_search", "description": "Search the web via 14 engines: google, youtube, amazon, bing, duckduckgo, reddit, github, stackoverflow, wikipedia, twitter, linkedin, facebook, instagram, tiktok. Call snapshot after to read results."},
+    {"name": "youtube_transcript", "description": "Fetch a YouTube transcript without opening a browser tab."}
   ],
   "categories": ["browser-automation", "web-scraping"],
   "tags": ["anti-detection", "stealth", "fingerprint", "camoufox", "playwright-alternative"]
