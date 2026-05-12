@@ -38,13 +38,15 @@ docker run -d -p 9377:9377 --name camofox-browser ghcr.io/redf0x1/camofox-browse
 2. Start CamoFox MCP in HTTP mode:
 
 ```bash
-docker run -p 3000:3000 --rm \
+docker run -p 3000:8080 --rm \
   -e CAMOFOX_TRANSPORT=http \
+  -e CAMOFOX_HTTP_HOST=0.0.0.0 \
+  -e CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars \
   -e CAMOFOX_URL=http://host.docker.internal:9377 \
   ghcr.io/redf0x1/camofox-mcp:latest node dist/http.js
 ```
 
-3. Point your HTTP-capable MCP client at `http://localhost:3000/mcp`.
+3. Point your HTTP-capable MCP client at `http://localhost:3000/mcp` and send `Authorization: Bearer replace-with-32-plus-random-chars`.
 
 ### Local development
 
@@ -78,6 +80,8 @@ These are the environment variables most users need first.
 | `CAMOFOX_HTTP_HOST` | `127.0.0.1` | No | Bind address for HTTP transport. |
 | `CAMOFOX_HTTP_PORT` | `3000` | No | Port for HTTP transport. |
 | `CAMOFOX_HTTP_RATE_LIMIT` | `60` | No | Request-per-minute limit for HTTP mode. |
+| `CAMOFOX_HTTP_API_KEY` | none | Required for non-loopback HTTP bind | Inbound HTTP MCP Bearer token. Use at least 32 random characters. |
+| `CAMOFOX_HTTP_ALLOWED_HOSTS` | none | No | Comma-separated Host header allowlist for HTTP transport. |
 
 ## Client Configuration
 
@@ -130,7 +134,7 @@ These are the environment variables most users need first.
 }
 ```
 
-If your browser server requires authentication, add `CAMOFOX_API_KEY` to the `env` block in both the browser server and the MCP client.
+If your browser server requires authentication, add `CAMOFOX_API_KEY` to the `env` block in both the browser server and the MCP client. This is separate from `CAMOFOX_HTTP_API_KEY`, which protects inbound HTTP MCP clients.
 
 ## Verify Setup
 

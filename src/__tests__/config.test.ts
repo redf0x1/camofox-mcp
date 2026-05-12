@@ -89,13 +89,17 @@ describe("config", () => {
       CAMOFOX_TRANSPORT: "http",
       CAMOFOX_HTTP_PORT: "8080",
       CAMOFOX_HTTP_HOST: "0.0.0.0",
-      CAMOFOX_HTTP_RATE_LIMIT: "120"
+      CAMOFOX_HTTP_RATE_LIMIT: "120",
+      CAMOFOX_HTTP_API_KEY: "0123456789abcdef0123456789abcdef",
+      CAMOFOX_HTTP_ALLOWED_HOSTS: "example.com, localhost "
     } as NodeJS.ProcessEnv);
 
     expect(cfg.transport).toBe("http");
     expect(cfg.httpPort).toBe(8080);
     expect(cfg.httpHost).toBe("0.0.0.0");
     expect(cfg.httpRateLimit).toBe(120);
+    expect(cfg.httpApiKey).toBe("0123456789abcdef0123456789abcdef");
+    expect(cfg.httpAllowedHosts).toEqual(["example.com", "localhost"]);
   });
 
   it("loadConfig() uses HTTP transport CLI arg overrides", () => {
@@ -108,7 +112,11 @@ describe("config", () => {
         "--http-host",
         "0.0.0.0",
         "--http-rate-limit",
-        "240"
+        "240",
+        "--http-api-key",
+        "abcdef0123456789abcdef0123456789",
+        "--http-allowed-hosts",
+        "mcp.example.com,localhost"
       ],
       {} as NodeJS.ProcessEnv
     );
@@ -117,6 +125,37 @@ describe("config", () => {
     expect(cfg.httpPort).toBe(9090);
     expect(cfg.httpHost).toBe("0.0.0.0");
     expect(cfg.httpRateLimit).toBe(240);
+    expect(cfg.httpApiKey).toBe("abcdef0123456789abcdef0123456789");
+    expect(cfg.httpAllowedHosts).toEqual(["mcp.example.com", "localhost"]);
+  });
+
+  it("loadConfig() rejects public HTTP bind without inbound HTTP API key", () => {
+    expect(() =>
+      loadConfig([], {
+        CAMOFOX_TRANSPORT: "http",
+        CAMOFOX_HTTP_HOST: "0.0.0.0"
+      } as NodeJS.ProcessEnv)
+    ).toThrow(/CAMOFOX_HTTP_API_KEY is required/i);
+  });
+
+  it("loadConfig() rejects weak inbound HTTP API keys", () => {
+    expect(() =>
+      loadConfig([], {
+        CAMOFOX_TRANSPORT: "http",
+        CAMOFOX_HTTP_HOST: "0.0.0.0",
+        CAMOFOX_HTTP_API_KEY: "short"
+      } as NodeJS.ProcessEnv)
+    ).toThrow(/at least 32 characters/i);
+  });
+
+  it("loadConfig() ignores short inbound HTTP API keys outside HTTP transport", () => {
+    const cfg = loadConfig([], {
+      CAMOFOX_TRANSPORT: "stdio",
+      CAMOFOX_HTTP_API_KEY: "short"
+    } as NodeJS.ProcessEnv);
+
+    expect(cfg.transport).toBe("stdio");
+    expect(cfg.httpApiKey).toBe("short");
   });
 
   it("loadConfig() defaults to stdio for invalid CAMOFOX_TRANSPORT", () => {

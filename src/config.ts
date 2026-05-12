@@ -14,6 +14,8 @@ interface CliArgs {
   httpPort?: number;
   httpHost?: string;
   httpRateLimit?: number;
+  httpApiKey?: string;
+  httpAllowedHosts?: string[];
 }
 
 function parseBoolFlag(raw: string): boolean | undefined {
@@ -26,6 +28,52 @@ function parseBoolFlag(raw: string): boolean | undefined {
 function isFalsy(val: string | undefined): boolean {
   if (!val) return false;
   return ["false", "0", "no", "off"].includes(val.trim().toLowerCase());
+}
+
+function parseCsvList(raw: string | undefined): string[] | undefined {
+  if (!raw) return undefined;
+  const values = raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+  return values.length > 0 ? values : undefined;
+}
+
+function isLoopbackHost(host: string): boolean {
+  const normalized = host.trim().toLowerCase().replace(/^\[(.*)\]$/, "$1");
+
+  if (normalized === "localhost" || normalized === "::1" || normalized === "0:0:0:0:0:0:0:1") {
+    return true;
+  }
+
+  const ipv4Parts = normalized.split(".");
+  if (ipv4Parts.length === 4) {
+    const octets = ipv4Parts.map((part) => Number.parseInt(part, 10));
+    if (octets.every((octet) => Number.isInteger(octet) && octet >= 0 && octet <= 255)) {
+      return octets[0] === 127;
+    }
+  }
+
+  return false;
+}
+
+function normalizeOptionalSecret(secret: string | undefined): string | undefined {
+  const trimmed = secret?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function assertHttpConfigSafe(config: Pick<Config, "transport" | "httpHost" | "httpApiKey">): void {
+  if (config.transport !== "http") {
+    return;
+  }
+
+  if (config.httpApiKey && config.httpApiKey.length < 32) {
+    throw new Error("CAMOFOX_HTTP_API_KEY must be at least 32 characters long");
+  }
+
+  if (!isLoopbackHost(config.httpHost) && !config.httpApiKey) {
+    throw new Error("CAMOFOX_HTTP_API_KEY is required when CAMOFOX_HTTP_HOST exposes HTTP transport beyond loopback");
+  }
 }
 
 function parseCliArgs(argv: string[]): CliArgs {
@@ -114,6 +162,18 @@ function parseCliArgs(argv: string[]): CliArgs {
       i += 1;
       continue;
     }
+
+    if (current === "--http-api-key" && next) {
+      args.httpApiKey = normalizeOptionalSecret(next);
+      i += 1;
+      continue;
+    }
+
+    if (current === "--http-allowed-hosts" && next) {
+      args.httpAllowedHosts = parseCsvList(next);
+      i += 1;
+      continue;
+    }
   }
 
   return args;
@@ -129,7 +189,7 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
   const envTransport =
     transportFromEnv === "stdio" || transportFromEnv === "http" ? transportFromEnv : undefined;
 
-  return {
+  const config: Config = {
     camofoxUrl: cli.camofoxUrl ?? env.CAMOFOX_URL ?? "http://localhost:9377",
     apiKey: cli.apiKey ?? env.CAMOFOX_API_KEY,
     defaultUserId: cli.defaultUserId ?? env.CAMOFOX_DEFAULT_USER_ID ?? "default",
@@ -139,6 +199,12 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
     transport: cli.transport ?? envTransport ?? "stdio",
     httpPort: cli.httpPort ?? (Number.isNaN(httpPortFromEnv) ? 3000 : httpPortFromEnv),
     httpHost: cli.httpHost ?? env.CAMOFOX_HTTP_HOST ?? "127.0.0.1",
-    httpRateLimit: cli.httpRateLimit ?? (Number.isNaN(httpRateLimitFromEnv) ? 60 : httpRateLimitFromEnv)
+    httpRateLimit: cli.httpRateLimit ?? (Number.isNaN(httpRateLimitFromEnv) ? 60 : httpRateLimitFromEnv),
+    httpApiKey: cli.httpApiKey ?? normalizeOptionalSecret(env.CAMOFOX_HTTP_API_KEY),
+    httpAllowedHosts: cli.httpAllowedHosts ?? parseCsvList(env.CAMOFOX_HTTP_ALLOWED_HOSTS)
   };
+
+  assertHttpConfigSafe(config);
+
+  return config;
 }

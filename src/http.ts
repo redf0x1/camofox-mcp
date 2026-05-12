@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
+import { InvalidTokenError } from "@modelcontextprotocol/sdk/server/auth/errors.js";
+import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import rateLimit from "express-rate-limit";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 import { CamofoxClient } from "./client.js";
@@ -15,6 +18,29 @@ let httpServer: ReturnType<ReturnType<typeof createMcpExpressApp>["listen"]> | n
 let cleanupClient: CamofoxClient | null = null;
 let cleanupInitialized = false;
 let httpSignalHandlersRegistered = false;
+
+function constantTimeEquals(actual: string, expected: string): boolean {
+  const actualDigest = createHash("sha256").update(actual).digest();
+  const expectedDigest = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(actualDigest, expectedDigest);
+}
+
+function createStaticTokenVerifier(expectedToken: string) {
+  return {
+    async verifyAccessToken(token: string) {
+      if (!constantTimeEquals(token, expectedToken)) {
+        throw new InvalidTokenError("Invalid bearer token");
+      }
+
+      return {
+        token,
+        clientId: "camofox-http-client",
+        scopes: ["mcp"],
+        expiresAt: Number.MAX_SAFE_INTEGER
+      };
+    }
+  };
+}
 
 function ensureHttpSignalHandlers(): void {
   if (httpSignalHandlersRegistered) {
@@ -60,7 +86,31 @@ export async function startHttpServer(config: Config = loadConfig()): Promise<vo
   ensureHttpSignalHandlers();
   ensureCleanup(config);
 
-  const app = createMcpExpressApp({ host: config.httpHost });
+  const app = createMcpHttpApp(config);
+
+  if (!config.apiKey) {
+    console.error(
+      "[camofox-mcp] ⚠️  CAMOFOX_API_KEY not set in HTTP mode — if your CamoFox server requires auth, requests will fail."
+    );
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    httpServer = app.listen(config.httpPort, config.httpHost, () => {
+      console.error(
+        `[camofox-mcp] HTTP transport listening on http://${config.httpHost}:${config.httpPort}/mcp (rate limit: ${config.httpRateLimit} req/min)`
+      );
+      resolve();
+    });
+
+    httpServer.on("error", reject);
+  });
+}
+
+export function createMcpHttpApp(config: Config): ReturnType<typeof createMcpExpressApp> {
+  const app = createMcpExpressApp({
+    host: config.httpHost,
+    allowedHosts: config.httpAllowedHosts
+  });
 
   const limiter = rateLimit({
     windowMs: 60_000,
@@ -70,6 +120,16 @@ export async function startHttpServer(config: Config = loadConfig()): Promise<vo
   });
 
   app.use("/mcp", limiter);
+
+  if (config.httpApiKey) {
+    app.use(
+      "/mcp",
+      requireBearerAuth({
+        verifier: createStaticTokenVerifier(config.httpApiKey),
+        requiredScopes: ["mcp"]
+      })
+    );
+  }
 
   app.post("/mcp", async (req: any, res: any) => {
     try {
@@ -105,22 +165,7 @@ export async function startHttpServer(config: Config = loadConfig()): Promise<vo
     res.status(405).json({ error: "Method not allowed in stateless HTTP mode" });
   });
 
-  if (!config.apiKey) {
-    console.error(
-      "[camofox-mcp] ⚠️  CAMOFOX_API_KEY not set in HTTP mode — if your CamoFox server requires auth, requests will fail."
-    );
-  }
-
-  await new Promise<void>((resolve, reject) => {
-    httpServer = app.listen(config.httpPort, config.httpHost, () => {
-      console.error(
-        `[camofox-mcp] HTTP transport listening on http://${config.httpHost}:${config.httpPort}/mcp (rate limit: ${config.httpRateLimit} req/min)`
-      );
-      resolve();
-    });
-
-    httpServer.on("error", reject);
-  });
+  return app;
 }
 
 if (isDirectExecution()) {

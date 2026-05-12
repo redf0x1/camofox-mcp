@@ -27,8 +27,11 @@ Download and start [CamoFox Browser](https://github.com/redf0x1/camofox-browser)
 # Using npx (no installation needed)
 CAMOFOX_TRANSPORT=http npx camofox-mcp
 
-# Or with API key authentication
-CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=your-key npx camofox-mcp
+# Browser-server API key authentication
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp
+
+# Inbound HTTP MCP authentication when binding beyond loopback
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp
 
 # Custom port
 CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp
@@ -49,6 +52,8 @@ Add to your OpenClaw configuration:
   }
 }
 ```
+
+If the MCP endpoint is protected with `CAMOFOX_HTTP_API_KEY`, configure the client or gateway to send `Authorization: Bearer <CAMOFOX_HTTP_API_KEY>`.
 
 #### Option B: mcptoskill CLI
 
@@ -113,6 +118,8 @@ CamoFox MCP provides 41 browser automation tools:
 | `CAMOFOX_HTTP_PORT` | `--http-port` | `3000` | HTTP port |
 | `CAMOFOX_HTTP_HOST` | `--http-host` | `127.0.0.1` | Bind address |
 | `CAMOFOX_HTTP_RATE_LIMIT` | `--http-rate-limit` | `60` | Requests/minute |
+| `CAMOFOX_HTTP_API_KEY` | `--http-api-key` | — | Inbound HTTP MCP Bearer token; required for non-loopback binds |
+| `CAMOFOX_HTTP_ALLOWED_HOSTS` | `--http-allowed-hosts` | — | Comma-separated Host header allowlist |
 | `CAMOFOX_API_KEY` | `--api-key` | — | CamoFox Browser API key |
 | `CAMOFOX_URL` | `--camofox-url` / `--url` | `http://localhost:9377` | CamoFox Browser server URL |
 | `CAMOFOX_TIMEOUT` | `--timeout` | `30000` | Request timeout (ms) |
@@ -120,10 +127,11 @@ CamoFox MCP provides 41 browser automation tools:
 ## Security
 
 - HTTP mode binds to `127.0.0.1` by default (localhost only)
+- Use `CAMOFOX_HTTP_API_KEY` for inbound HTTP MCP client authentication when exposing beyond loopback
 - Use `CAMOFOX_API_KEY` for CamoFox Browser authentication
 - Rate limiting protects against abuse (60 req/min default)
 - DNS rebinding protection enabled via MCP SDK
-- For network exposure (`0.0.0.0`), ensure proper firewall rules
+- For network exposure (`0.0.0.0`), set `CAMOFOX_HTTP_API_KEY`, configure firewall rules, and optionally set `CAMOFOX_HTTP_ALLOWED_HOSTS`
 
 ## Troubleshooting
 

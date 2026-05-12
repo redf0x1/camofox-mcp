@@ -10,7 +10,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 - Categories: **12**
 - Primary interaction model: `create_tab` -> `navigate` or `web_search` -> `snapshot` -> interact with refs or CSS selectors
 - Preferred read path: use `snapshot` first, then fall back to CSS-selector and DOM tools when refs are incomplete
-- API key note: tools marked `Yes` call browser-server endpoints that require `CAMOFOX_API_KEY` when the browser server is protected
+- API key note: tools marked `Yes` call browser-server endpoints that require `CAMOFOX_API_KEY` when the browser server is protected. HTTP transport exposure uses separate inbound `CAMOFOX_HTTP_API_KEY` Bearer authentication.
 
 ## Quick Reference
 

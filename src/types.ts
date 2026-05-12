@@ -9,6 +9,8 @@ export interface Config {
   httpPort: number;
   httpHost: string;
   httpRateLimit: number;
+  httpApiKey?: string;
+  httpAllowedHosts?: string[];
 }
 
 export interface HealthResponse {

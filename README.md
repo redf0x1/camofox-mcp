@@ -56,11 +56,16 @@ docker run -d -p 9377:9377 --name camofox-browser ghcr.io/redf0x1/camofox-browse
 Run CamoFox MCP in HTTP mode for remote MCP clients such as OpenClaw:
 
 ```bash
-docker run -p 3000:3000 --rm \
+docker run -p 3000:8080 --rm \
   -e CAMOFOX_TRANSPORT=http \
+  -e CAMOFOX_HTTP_HOST=0.0.0.0 \
+  -e CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars \
   -e CAMOFOX_URL=http://host.docker.internal:9377 \
   ghcr.io/redf0x1/camofox-mcp:latest node dist/http.js
 ```
+
+Configure your HTTP MCP client to connect to `http://localhost:3000/mcp` with
+`Authorization: Bearer replace-with-32-plus-random-chars`.
 
 Full client configuration examples live in [docs/getting-started.md](docs/getting-started.md).
 
@@ -97,11 +102,12 @@ On a cold server with no active tabs yet, `browserConnected` can be `false`; cre
 - CamoFox MCP is not a standalone browser. You must run a compatible `camofox-browser` server separately.
 - Accessibility-tree refs are the primary interaction model, but SPA and custom-component sites can require CSS selectors or rendered HTML tools.
 - If the browser server enforces authentication, API-key-gated operations need the same `CAMOFOX_API_KEY` on both sides.
+- If HTTP transport is exposed beyond loopback, set `CAMOFOX_HTTP_API_KEY` and require clients to send it as a Bearer token.
 - HTTP transport is mainly for remote MCP clients. Desktop MCP clients usually work best with stdio configuration.
 
 ## Security
 
-Treat this as a browser control surface. In shared or networked environments, isolate the browser server, avoid exposing MCP endpoints broadly, and use `CAMOFOX_API_KEY` when authentication is enabled. Session profiles can contain sensitive cookies and should be stored accordingly.
+Treat this as a browser control surface. In shared or networked environments, isolate the browser server, avoid exposing MCP endpoints broadly, and use `CAMOFOX_HTTP_API_KEY` for inbound HTTP MCP clients plus `CAMOFOX_API_KEY` when the browser server requires authentication. Session profiles can contain sensitive cookies and should be stored accordingly.
 
 ## Documentation
 
