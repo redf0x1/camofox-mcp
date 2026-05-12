@@ -26,3 +26,5 @@ Open a GitHub issue with:
 - Expected vs actual behavior
 - CamoFox server version
 - Node.js version
+
+Do not post exploit details or sensitive security reports in public issues. Use the private vulnerability reporting flow in [SECURITY.md](SECURITY.md) instead.

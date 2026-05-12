@@ -115,4 +115,4 @@ Start at [docs/README.md](docs/README.md) for the documentation hub, then use [d
 
 ## Contributing + License
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [LICENSE](LICENSE) for the MIT license.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines, [SECURITY.md](SECURITY.md) for private vulnerability reporting, and [LICENSE](LICENSE) for the MIT license.
