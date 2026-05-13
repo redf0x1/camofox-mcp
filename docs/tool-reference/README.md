@@ -11,7 +11,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 - Primary interaction model: `create_tab` -> `navigate` or `web_search` -> `snapshot` -> interact with refs or CSS selectors
 - Preferred read path: use `snapshot` first, then fall back to CSS-selector and DOM tools when refs are incomplete
 - API key note: tools marked `Yes` call browser-server endpoints that require `CAMOFOX_API_KEY` when the browser server is protected. HTTP transport exposure uses separate inbound `CAMOFOX_HTTP_API_KEY` Bearer authentication.
-- Compatibility note: use `camofox-browser` `2.4.2` or newer when sending both `proxyProfile` and raw `proxy`; that browser version fixes the precedence contract so `proxyProfile` wins.
+- Compatibility note: use `camofox-browser` `2.4.3` or newer when sending `proxyProfile` or raw `proxy`; that browser version applies the resolved session proxy to the browser context launch path.
 
 ## Quick Reference
 

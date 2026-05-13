@@ -2,6 +2,11 @@
 
 All notable changes to this ClawHub skill package will be documented in this file.
 
+## [1.14.1] - 2026-05-13
+
+- Updated package metadata from 1.14.0 to 1.14.1.
+- Updated compatibility guidance to require `camofox-browser` 2.4.3+ for session-level proxy launch wiring.
+
 ## [1.14.0] - 2026-05-13
 
 - Updated package metadata from 1.13.2 to 1.14.0.

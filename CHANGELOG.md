@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.14.1] - 2026-05-13
+
+### Compatibility
+- Pair with `camofox-browser` `2.4.3` or newer for session-level `proxyProfile`/raw `proxy` egress, because `2.4.3` applies the resolved session proxy to browser context launch.
+
+### Changed
+- Public server metadata and skill docs now point to `camofox-mcp` `1.14.1`, superseding the pushed-but-unpublished `1.14.0` release tag.
+
 ## [1.14.0] - 2026-05-13
 
 ### Added
@@ -8,7 +16,7 @@
 - HTTP auth boundary regression coverage to verify unauthenticated `/mcp` requests are rejected before MCP tool-server creation.
 
 ### Compatibility
-- Pair with `camofox-browser` `2.4.2` or newer when sending both `proxyProfile` and raw `proxy`; `2.4.2` fixes the browser-side precedence contract so `proxyProfile` wins.
+- Superseded before npm/GitHub release by `1.14.1`, which pairs this MCP surface with `camofox-browser` `2.4.3` for browser-side proxy launch wiring.
 
 ### Changed
 - Public server metadata and skill docs now reflect 47 registered tools.

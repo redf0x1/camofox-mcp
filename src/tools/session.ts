@@ -132,7 +132,7 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
 
   server.tool(
     "toggle_display",
-    "Toggle browser display mode between headless and headed. When encountering CAPTCHAs or issues requiring visual interaction, switch to headed mode (headless: false) to show the browser window. After resolving, switch back to headless mode (headless: true). When switching to virtual or headed mode, the response includes a vncUrl field — open this URL in a browser to see and interact with the browser GUI. Note: This restarts the browser context — all tabs are invalidated but cookies/auth persist.",
+    "Toggle browser display mode between headless and headed. When encountering CAPTCHAs or issues requiring visual interaction, switch to headed mode (headless: false) to show the browser window. After resolving, switch back to headless mode (headless: true). When switching an existing single context to virtual or headed mode, the response includes a vncUrl field — open this URL in a browser to see and interact with the browser GUI. Check tabsInvalidated in the response: when true, recreate tabs; when false, existing tracked tabs remain usable and the override applies to future contexts.",
     {
       userId: z.string().min(1).describe("User/session identifier"),
       headless: z
@@ -151,7 +151,9 @@ export function registerSessionTools(server: McpServer, deps: ToolDeps): void {
           .parse(input);
 
         const result = await deps.client.toggleDisplay(parsed.userId, parsed.headless);
-        clearTrackedTabsByUserId(parsed.userId);
+        if (result.tabsInvalidated !== false) {
+          clearTrackedTabsByUserId(parsed.userId);
+        }
 
         return okResult(result);
       } catch (error) {

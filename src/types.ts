@@ -126,6 +126,7 @@ export interface ToggleDisplayResponse {
   headless: boolean | "virtual";
   message: string;
   userId: string;
+  tabsInvalidated?: boolean;
   vncUrl?: string;
 }
 

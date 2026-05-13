@@ -202,3 +202,76 @@ describe("tools/session camofox_close_session", () => {
     expect(() => getTrackedTab("tab-sess-throw-2")).toThrow();
   });
 });
+
+describe("tools/session toggle_display", () => {
+  let deps: ToolDeps;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    deps = {
+      client: {
+        toggleDisplay: vi.fn()
+      } as unknown as ToolDeps["client"],
+      config: loadConfig([], {
+        CAMOFOX_URL: "http://test-camofox:9377",
+        CAMOFOX_DEFAULT_USER_ID: "default",
+        CAMOFOX_AUTO_SAVE: "false"
+      } as NodeJS.ProcessEnv)
+    };
+  });
+
+  afterEach(() => {
+    for (const tab of getAllTrackedTabs()) {
+      removeTrackedTab(tab.tabId);
+    }
+    vi.clearAllMocks();
+  });
+
+  it("preserves tracked tabs when browser reports display override did not invalidate them", async () => {
+    trackTab(makeTab("tab-toggle-1", { userId: "user-1", url: "http://a.com" }));
+    trackTab(makeTab("tab-toggle-2", { userId: "user-1", url: "http://b.com" }));
+
+    vi.mocked(deps.client.toggleDisplay).mockResolvedValueOnce({
+      ok: true,
+      headless: "virtual",
+      message: "Display mode override saved as virtual display mode. Existing tabs preserved; new contexts use the requested mode.",
+      userId: "user-1",
+      tabsInvalidated: false
+    });
+
+    const { server, getHandler } = makeServerCapture();
+    registerSessionTools(server as unknown as Parameters<typeof registerSessionTools>[0], deps);
+    const handler = getHandler("toggle_display");
+
+    const result = await handler({ userId: "user-1", headless: "virtual" });
+
+    expect(result.isError).toBeFalsy();
+    expect(deps.client.toggleDisplay).toHaveBeenCalledWith("user-1", "virtual");
+    expect(getTrackedTab("tab-toggle-1").tabId).toBe("tab-toggle-1");
+    expect(getTrackedTab("tab-toggle-2").tabId).toBe("tab-toggle-2");
+  });
+
+  it("clears tracked tabs when browser reports display toggle invalidated them", async () => {
+    trackTab(makeTab("tab-toggle-invalidated-1", { userId: "user-1", url: "http://a.com" }));
+    trackTab(makeTab("tab-toggle-invalidated-2", { userId: "user-1", url: "http://b.com" }));
+
+    vi.mocked(deps.client.toggleDisplay).mockResolvedValueOnce({
+      ok: true,
+      headless: "virtual",
+      message: "Browser visible via VNC",
+      userId: "user-1",
+      tabsInvalidated: true,
+      vncUrl: "http://127.0.0.1:59077"
+    });
+
+    const { server, getHandler } = makeServerCapture();
+    registerSessionTools(server as unknown as Parameters<typeof registerSessionTools>[0], deps);
+    const handler = getHandler("toggle_display");
+
+    const result = await handler({ userId: "user-1", headless: "virtual" });
+
+    expect(result.isError).toBeFalsy();
+    expect(() => getTrackedTab("tab-toggle-invalidated-1")).toThrow();
+    expect(() => getTrackedTab("tab-toggle-invalidated-2")).toThrow();
+  });
+});
