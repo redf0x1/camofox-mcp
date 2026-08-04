@@ -169,6 +169,25 @@ describe("client", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("screenshot forwards fullPage to the browser server", async () => {
+    const client = new CamofoxClient(makeConfig());
+
+    const fetchMock = vi.fn((async (url: string, init?: RequestInit) => {
+      expect(url).toBe("http://test:9377/tabs/tab-1/screenshot?userId=user-1&fullPage=true");
+      expect(init?.method).toBe("GET");
+      return new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+        status: 200,
+        headers: { "content-type": "image/png" }
+      });
+    }) as typeof fetch);
+    globalThis.fetch = fetchMock;
+
+    await expect(client.screenshot("tab-1", "user-1", true)).resolves.toEqual(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47])
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("successful request parses JSON response", async () => {
     const client = new CamofoxClient(makeConfig());
 

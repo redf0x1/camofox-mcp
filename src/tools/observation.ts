@@ -244,15 +244,19 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "screenshot",
-    "Take visual screenshot in base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
+    "Take visual screenshot in base64 PNG. Set fullPage to capture the entire scrollable page. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
     {
-      tabId: z.string().min(1).describe("Tab ID from create_tab")
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      fullPage: z.boolean().optional().default(false).describe("Capture the entire scrollable page instead of only the current viewport")
     },
     async (input: unknown) => {
       try {
-        const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
+        const parsed = z.object({
+          tabId: z.string().min(1).describe("Tab ID from create_tab"),
+          fullPage: z.boolean().optional().default(false).describe("Capture the entire scrollable page instead of only the current viewport")
+        }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        const screenshotBuffer = await deps.client.screenshot(parsed.tabId, tracked.userId);
+        const screenshotBuffer = await deps.client.screenshot(parsed.tabId, tracked.userId, parsed.fullPage);
         incrementToolCall(parsed.tabId);
         return imageResult(screenshotBuffer.toString("base64"));
       } catch (error) {

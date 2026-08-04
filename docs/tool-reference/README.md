@@ -36,7 +36,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `snapshot` | Observation | Read the accessibility snapshot, refs, and truncation metadata. |
 | `camofox_get_page_html` | Observation | Return rendered page HTML or a selected element's outer HTML. |
 | `camofox_query_selector` | Observation | Inspect a CSS selector and optionally read a specific attribute. |
-| `screenshot` | Observation | Capture a base64 PNG screenshot. |
+| `screenshot` | Observation | Capture a base64 PNG screenshot of the viewport or entire scrollable page. |
 | `get_links` | Observation | Extract links from the page or a scoped container. |
 | `youtube_transcript` | Observation | Fetch a YouTube transcript without opening a tab. |
 | `camofox_wait_for_text` | Observation | Wait until specific text appears. |
@@ -108,7 +108,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `snapshot` | Read the accessibility-tree snapshot, including refs and pagination metadata for long pages. | `tabId: string`; `offset?: number`. | `url`, `snapshot`, `refsCount`, and when truncated: `truncated`, `totalChars`, `hasMore`, `nextOffset`, `truncationInfo`. | No | `snapshot({ tabId: "tab_123" })` |
 | `camofox_get_page_html` | Get rendered HTML from the live DOM, optionally scoped to one selector. | `tabId: string`; `selector?: string`. | `html`. | Yes | `camofox_get_page_html({ tabId: "tab_123", selector: "main" })` |
 | `camofox_query_selector` | Inspect a selector and optionally return a specific attribute instead of the full element payload. | `tabId: string`; `selector: string`; `attribute?: string`. | If found without `attribute`: `exists`, `text`, `html`, `tag`, `attributes`. If `attribute` is set: `exists`, `attribute`, `value`. If missing: `exists: false`. | Yes | `camofox_query_selector({ tabId: "tab_123", selector: "a.download", attribute: "href" })` |
-| `screenshot` | Capture a visual screenshot when layout proof matters more than token efficiency. | `tabId: string`. | Base64 PNG image result. | No | `screenshot({ tabId: "tab_123" })` |
+| `screenshot` | Capture a visual screenshot when layout proof matters more than token efficiency. | `tabId: string`; `fullPage?: boolean` default `false`. | Base64 PNG image result. | No | `screenshot({ tabId: "tab_123", fullPage: true })` |
 | `get_links` | Extract links from the page or a selected container. | `tabId: string`; `scope?: string`; `extension?: string` comma-separated; `downloadOnly?: boolean`. | Array of link records with fields such as `text`, `href`, and any server-supplied metadata. | No | `get_links({ tabId: "tab_123", extension: "pdf,zip" })` |
 | `youtube_transcript` | Fetch a transcript for a YouTube video without managing a tab. | `url: string`; `languages?: string[]` default browser-server behavior, commonly `['en']`. | Provider payload including `status`, `video_id`, `video_title?`, `transcript?`, `language?`, `total_words?`, `available_languages?`, `message?`, `code?`. | No | `youtube_transcript({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", languages: ["en"] })` |
 | `camofox_wait_for_text` | Wait until a specific text string appears on the page. | `tabId: string`; `text: string`; `timeout?: number` default `10000`. | `message`. | No | `camofox_wait_for_text({ tabId: "tab_123", text: "Results" })` |

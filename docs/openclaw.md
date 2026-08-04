@@ -94,7 +94,7 @@ CamoFox MCP provides 47 browser automation tools:
 
 ### Content
 - `snapshot` — Get accessibility tree (low token cost)
-- `screenshot` — Take screenshot (high token cost)
+- `screenshot` — Take viewport or full-page screenshot with `fullPage: true` (high token cost)
 - `camofox_wait_for_text` — Wait for text content to appear
 - `get_links` — Get all links on page
 

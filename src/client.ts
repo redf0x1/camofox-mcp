@@ -649,9 +649,13 @@ export class CamofoxClient {
     );
   }
 
-  async screenshot(tabId: string, userId: string): Promise<Buffer> {
+  async screenshot(tabId: string, userId: string, fullPage = false): Promise<Buffer> {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+    params.set("fullPage", fullPage ? "true" : "false");
+
     const binary = await this.requestBinary(
-      `/tabs/${encodeURIComponent(tabId)}/screenshot?userId=${encodeURIComponent(userId)}`,
+      `/tabs/${encodeURIComponent(tabId)}/screenshot?${params.toString()}`,
       {
       method: "GET"
       }
