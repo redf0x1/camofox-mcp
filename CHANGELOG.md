@@ -6,7 +6,7 @@
 - Validate templates without reflecting credentials/tokens; encode search queries safely.
 - Exercise search forwarding through the MCP/browser HTTP contract and run unit tests in CI.
 - Raise the MCP SDK floor to 1.32.2, update Zod to 4.6.7, and refresh affected transitive patches; production dependency audit reports no known vulnerabilities.
-- Recommend `camofox-browser` 2.4.9 for corrected browser installation and patched dependencies. That server requires Node.js 22+; this HTTP client retains its existing Node.js 18+ and browser 2.4.7+ API compatibility.
+- Recommend `camofox-browser` 2.4.9 for corrected browser installation and patched dependencies. That server requires Node.js 22+; this HTTP client now requires Node.js 20+ to match the patched SDK dependency tree, while retaining browser 2.4.7+ API compatibility. Upgrade Node before installing on a Node 18 host.
 
 ## [1.15.0] - 2026-08-13
 
