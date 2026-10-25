@@ -84,6 +84,7 @@ These are the environment variables most users need first.
 |---|---|---|---|
 | `CAMOFOX_URL` | `http://localhost:9377` | Yes | Base URL for the `camofox-browser` server. |
 | `CAMOFOX_API_KEY` | none | No | Outbound browser-server API key. Required only when the browser server enforces authentication; leave unset for browser `CAMOFOX_AUTH_MODE=disabled`. |
+| `CAMOFOX_SEARCH_URL_TEMPLATE` | unset | No | Custom search URL, e.g. `https://search.example/search?q={query}`; browser network policy still applies. |
 | `CAMOFOX_TIMEOUT` | `30000` | No | Request timeout in milliseconds. |
 | `CAMOFOX_DEFAULT_USER_ID` | `default` | No | Default user/session identifier for tab creation. |
 | `CAMOFOX_PROFILES_DIR` | `~/.camofox-mcp/profiles` | No | Directory used for saved session profiles. |

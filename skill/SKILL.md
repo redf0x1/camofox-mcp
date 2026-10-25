@@ -1,7 +1,7 @@
 ---
 name: skill
 title: CamoFox MCP for OpenClaw
-version: 1.15.0
+version: 1.16.0
 description: Anti-detection browser automation MCP skill for OpenClaw agents with 47 tools for navigation, interaction, observation, extraction, downloads, profiles, sessions, and stealth web search.
 author: redf0x1
 tags:
@@ -16,7 +16,7 @@ license: MIT
 homepage: https://github.com/redf0x1/camofox-mcp#readme
 metadata:
   title: CamoFox MCP for OpenClaw
-  version: 1.15.0
+  version: 1.16.0
   author: redf0x1
   tags:
     - mcp
@@ -53,16 +53,16 @@ Use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds supported Windows x
 ### 2) Start CamoFox MCP in HTTP mode
 
 ```bash
-CAMOFOX_TRANSPORT=http npx camofox-mcp@1.15.0
+CAMOFOX_TRANSPORT=http npx camofox-mcp@1.16.0
 ```
 
 Optional examples:
 
 ```bash
-CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.15.0
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.15.0
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.15.0
-CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.15.0
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.16.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.16.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.16.0
+CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.16.0
 ```
 
 For browser `CAMOFOX_AUTH_MODE=disabled` on a trusted private agent network,
@@ -198,3 +198,24 @@ Use this skill when the user asks for tasks like:
 - Snapshot-first design that reduces token burn while preserving actionable context
 - Built-in profile/session controls for long-running authenticated automations
 - Native HTTP MCP endpoint for OpenClaw and remote MCP-compatible clients
+
+## Custom search engines
+
+Set `CAMOFOX_SEARCH_URL_TEMPLATE` in the **MCP server** environment, for example
+`https://search.example/search?q={query}&language=en`, then call
+`web_search({ tabId: "tab_123", query: "café & tea", engine: "custom" })`.
+For SearXNG, use your instance's `/search?q={query}` URL. Restart MCP after changing
+its environment. Google remains the default; the 14 browser macros are unchanged.
+
+The template must be an absolute HTTP(S) URL with exactly one literal `{query}`
+in its path or query, never its host, credentials, or fragment. Credentials in URLs
+are rejected. The query is percent-encoded once, including Unicode and `&`.
+Invalid configuration fails startup without reflecting the URL or its tokens;
+`custom` without configuration returns an actionable error (no fallback).
+
+Custom search uses ordinary browser `navigate`, then `snapshot`, not a new macro
+or a direct MCP HTTP fetch to the search engine. Browser URL validation and existing
+private-network/SSRF policy remain authoritative, including redirects. Self-hosted
+or private SearXNG requires the browser's existing network policy to allow it;
+this setting does not grant access or weaken that policy. Do not store secrets
+in search URLs: navigated URLs can appear in tool output, browser history and logs.

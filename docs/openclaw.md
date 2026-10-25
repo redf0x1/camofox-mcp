@@ -127,6 +127,7 @@ CamoFox MCP provides 47 browser automation tools:
 | `CAMOFOX_HTTP_ALLOWED_HOSTS` | `--http-allowed-hosts` | — | Comma-separated Host header allowlist |
 | `CAMOFOX_API_KEY` | `--api-key` | — | CamoFox Browser API key |
 | `CAMOFOX_URL` | `--camofox-url` / `--url` | `http://localhost:9377` | CamoFox Browser server URL |
+| `CAMOFOX_SEARCH_URL_TEMPLATE` | — | unset | Custom search URL with one `{query}`; use `web_search` engine `custom`. Existing browser network policy applies. |
 | `CAMOFOX_TIMEOUT` | `--timeout` | `30000` | Request timeout (ms) |
 
 ## Security

@@ -1,6 +1,7 @@
 export interface Config {
   camofoxUrl: string;
   apiKey?: string;
+  searchUrlTemplate?: string;
   defaultUserId: string;
   profilesDir: string;
   timeout: number;
@@ -161,6 +162,8 @@ export const SEARCH_ENGINES = [
 ] as const;
 
 export type SearchEngine = (typeof SEARCH_ENGINES)[number];
+export const WEB_SEARCH_ENGINES = [...SEARCH_ENGINES, "custom"] as const;
+export type WebSearchEngine = (typeof WEB_SEARCH_ENGINES)[number];
 
 export interface ProfileCookie {
   name: string;

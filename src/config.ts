@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { type Config } from "./types.js";
+import { validateSearchUrlTemplate } from "./search-template.js";
 import { parseViewportString } from "./viewport.js";
 
 interface CliArgs {
@@ -205,6 +206,7 @@ export function loadConfig(argv = process.argv.slice(2), env = process.env): Con
   const config: Config = {
     camofoxUrl: cli.camofoxUrl ?? env.CAMOFOX_URL ?? "http://localhost:9377",
     apiKey: cli.apiKey ?? env.CAMOFOX_API_KEY,
+    searchUrlTemplate: env.CAMOFOX_SEARCH_URL_TEMPLATE === undefined ? undefined : validateSearchUrlTemplate(env.CAMOFOX_SEARCH_URL_TEMPLATE),
     defaultUserId: cli.defaultUserId ?? env.CAMOFOX_DEFAULT_USER_ID ?? "default",
     profilesDir: cli.profilesDir ?? env.CAMOFOX_PROFILES_DIR ?? join(homedir(), ".camofox-mcp", "profiles"),
     timeout: cli.timeout ?? timeoutFromEnv ?? 30_000,

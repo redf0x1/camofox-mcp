@@ -21,3 +21,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run build
+      # Vitest 4 requires Node 20+; retain Node 18 build compatibility.
+      - run: npm test
+        if: matrix.node-version != 18

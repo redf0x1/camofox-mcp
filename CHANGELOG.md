@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.16.0] - Unreleased
+
+- Add MCP-owned custom URL-template search via `CAMOFOX_SEARCH_URL_TEMPLATE` and `web_search` engine `custom`, retaining existing browser macros and network policy.
+- Validate templates without reflecting credentials/tokens; encode search queries safely.
+- Exercise search forwarding through the MCP/browser HTTP contract and run unit tests in CI.
+
 ## [1.15.0] - 2026-08-13
 
 ### Added
