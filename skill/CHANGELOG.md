@@ -2,6 +2,12 @@
 
 All notable changes to this ClawHub skill package will be documented in this file.
 
+## [1.15.0] - 2026-08-13
+
+- Updated package metadata from 1.14.5 to 1.15.0.
+- Updated compatibility guidance to recommend `camofox-browser` 2.4.7+ and document Windows x64 headless portable support.
+- Documented full-page screenshots and aligned `web_search` with the browser's 14 supported macros.
+
 ## [1.14.5] - 2026-06-17
 
 - Updated package metadata from 1.14.4 to 1.14.5.

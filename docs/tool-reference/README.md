@@ -11,7 +11,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 - Primary interaction model: `create_tab` -> `navigate` or `web_search` -> `snapshot` -> interact with refs or CSS selectors
 - Preferred read path: use `snapshot` first, then fall back to CSS-selector and DOM tools when refs are incomplete
 - API key note: tools marked `Yes` call browser-server endpoints that require outbound `CAMOFOX_API_KEY` when the browser server is protected. HTTP transport exposure uses separate inbound `CAMOFOX_HTTP_API_KEY` Bearer authentication.
-- Compatibility note: use `camofox-browser` `2.4.6` or newer. Browser `2.4.6` pins the Camoufox-compatible Playwright protocol dependency for fresh installs, browser `2.4.5` adds `CAMOFOX_AUTH_MODE=disabled` for trusted private networks, browser `2.4.4` fixes first-tab reuse for persistent contexts, and browser `2.4.3` added session proxy launch support. Leave `CAMOFOX_API_KEY` unset in MCP when using that disabled browser auth mode.
+- Compatibility note: use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds supported Windows x64 headless portable use and session-scoped navigation recovery; `2.4.6` pins the Camoufox-compatible Playwright protocol dependency for fresh installs, `2.4.5` adds `CAMOFOX_AUTH_MODE=disabled` for trusted private networks, `2.4.4` fixes first-tab reuse for persistent contexts, and `2.4.3` added session proxy launch support. Leave `CAMOFOX_API_KEY` unset in MCP when using disabled browser auth mode.
 
 ## Quick Reference
 
@@ -41,7 +41,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `youtube_transcript` | Observation | Fetch a YouTube transcript without opening a tab. |
 | `camofox_wait_for_text` | Observation | Wait until specific text appears. |
 | `camofox_wait_for_selector` | Observation | Wait until a CSS selector appears in the live DOM. |
-| `web_search` | Search & Discovery | Run a search through one of 14 built-in engines. |
+| `web_search` | Search & Discovery | Run one of the 14 search macros supported by camofox-browser. |
 | `import_cookies` | Session Management | Import cookies into a user session or tab. |
 | `get_stats` | Session Management | Return local tab stats plus browser-server session stats. |
 | `camofox_close_session` | Session Management | Close all tabs for the current user session. |
@@ -108,7 +108,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `snapshot` | Read the accessibility-tree snapshot, including refs and pagination metadata for long pages. | `tabId: string`; `offset?: number`. | `url`, `snapshot`, `refsCount`, and when truncated: `truncated`, `totalChars`, `hasMore`, `nextOffset`, `truncationInfo`. | No | `snapshot({ tabId: "tab_123" })` |
 | `camofox_get_page_html` | Get rendered HTML from the live DOM, optionally scoped to one selector. | `tabId: string`; `selector?: string`. | `html`. | Yes | `camofox_get_page_html({ tabId: "tab_123", selector: "main" })` |
 | `camofox_query_selector` | Inspect a selector and optionally return a specific attribute instead of the full element payload. | `tabId: string`; `selector: string`; `attribute?: string`. | If found without `attribute`: `exists`, `text`, `html`, `tag`, `attributes`. If `attribute` is set: `exists`, `attribute`, `value`. If missing: `exists: false`. | Yes | `camofox_query_selector({ tabId: "tab_123", selector: "a.download", attribute: "href" })` |
-| `screenshot` | Capture a visual screenshot when layout proof matters more than token efficiency. | `tabId: string`. | Base64 PNG image result. | No | `screenshot({ tabId: "tab_123" })` |
+| `screenshot` | Capture a viewport or full-page screenshot when layout proof matters more than token efficiency. | `tabId: string`; `fullPage?: boolean` default `false`. | Base64 PNG image result. | No | `screenshot({ tabId: "tab_123", fullPage: true })` |
 | `get_links` | Extract links from the page or a selected container. | `tabId: string`; `scope?: string`; `extension?: string` comma-separated; `downloadOnly?: boolean`. | Array of link records with fields such as `text`, `href`, and any server-supplied metadata. | No | `get_links({ tabId: "tab_123", extension: "pdf,zip" })` |
 | `youtube_transcript` | Fetch a transcript for a YouTube video without managing a tab. | `url: string`; `languages?: string[]` default browser-server behavior, commonly `['en']`. | Provider payload including `status`, `video_id`, `video_title?`, `transcript?`, `language?`, `total_words?`, `available_languages?`, `message?`, `code?`. | No | `youtube_transcript({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", languages: ["en"] })` |
 | `camofox_wait_for_text` | Wait until a specific text string appears on the page. | `tabId: string`; `text: string`; `timeout?: number` default `10000`. | `message`. | No | `camofox_wait_for_text({ tabId: "tab_123", text: "Results" })` |
@@ -118,7 +118,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 
 | Name | Description | Parameters | Returns | Requires API Key | Example |
 | --- | --- | --- | --- | --- | --- |
-| `web_search` | Run a search via a built-in macro and immediately return the resulting page snapshot. | `tabId: string`; `query: string`; `engine?: "google" | "youtube" | "amazon" | "bing" | "duckduckgo" | "reddit" | "github" | "stackoverflow" | "wikipedia" | "twitter" | "linkedin" | "facebook" | "instagram" | "tiktok"` default `google`. | `url`, `snapshot`. | No | `web_search({ tabId: "tab_123", query: "camoufox github", engine: "google" })` |
+| `web_search` | Run a browser-supported search macro and immediately return the resulting page snapshot. | `tabId: string`; `query: string` (subreddit name for `reddit_subreddit`); `engine?: "google" | "youtube" | "amazon" | "reddit" | "reddit_subreddit" | "wikipedia" | "twitter" | "yelp" | "spotify" | "netflix" | "linkedin" | "instagram" | "tiktok" | "twitch"` default `google`. | `url`, `snapshot`. | No | `web_search({ tabId: "tab_123", query: "camoufox", engine: "google" })` |
 
 ## Session Management
 
@@ -127,7 +127,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `import_cookies` | Import a JSON cookie array into a user session and optionally target a specific tab. | `userId: string`; `cookies: string` containing a JSON array; `tabId?: string`. | `success`. | Yes | `import_cookies({ userId: "demo", cookies: "[{\"name\":\"sid\",\"value\":\"...\"}]" })` |
 | `get_stats` | Return tracked tab counters plus browser-server stats. | `tabId: string`. | `visitedUrls`, `toolCalls`, `refsCount`, `sessionKey`, `remote`. | No | `get_stats({ tabId: "tab_123" })` |
 | `camofox_close_session` | Close every tracked tab for the current user session. | `tabId: string` from any tab in the session. | `message`, `autoSaved`. | No | `camofox_close_session({ tabId: "tab_123" })` |
-| `toggle_display` | Switch a session between headless, headed, and virtual-display mode. Existing tracked tabs are invalidated. | `userId: string`; `headless: boolean | "virtual"`. | Browser-server payload including `ok`, `headless`, `message`, `userId`, `vncUrl?`. | No | `toggle_display({ userId: "demo", headless: "virtual" })` |
+| `toggle_display` | Switch a session between headless, headed, and virtual-display mode. Existing tracked tabs are invalidated. On Windows x64, browser 2.4.7 supports `headless: true` only. | `userId: string`; `headless: boolean | "virtual"`. | Browser-server payload including `ok`, `headless`, `message`, `userId`, `vncUrl?`. | No | `toggle_display({ userId: "demo", headless: "virtual" })` |
 
 ## Profiles
 

@@ -1,7 +1,7 @@
 ---
 name: skill
 title: CamoFox MCP for OpenClaw
-version: 1.14.5
+version: 1.15.0
 description: Anti-detection browser automation MCP skill for OpenClaw agents with 47 tools for navigation, interaction, observation, extraction, downloads, profiles, sessions, and stealth web search.
 author: redf0x1
 tags:
@@ -16,7 +16,7 @@ license: MIT
 homepage: https://github.com/redf0x1/camofox-mcp#readme
 metadata:
   title: CamoFox MCP for OpenClaw
-  version: 1.14.5
+  version: 1.15.0
   author: redf0x1
   tags:
     - mcp
@@ -48,21 +48,21 @@ Most browser automation flows eventually hit CAPTCHAs, fingerprint checks, or bo
 ### 1) Start CamoFox Browser
 
 CamoFox Browser must be running first (default `http://localhost:9377`).
-Use `camofox-browser` `2.4.6` or newer so fresh installs pin the Camoufox-compatible Playwright protocol dependency. Browser `2.4.5` introduced explicit browser auth modes, and browser `2.4.4` fixed first-tab reuse for persistent contexts.
+Use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds supported Windows x64 headless portable use and session-scoped navigation recovery; browser `2.4.6` pins the Camoufox-compatible Playwright protocol dependency, `2.4.5` introduced explicit browser auth modes, and `2.4.4` fixed first-tab reuse for persistent contexts.
 
 ### 2) Start CamoFox MCP in HTTP mode
 
 ```bash
-CAMOFOX_TRANSPORT=http npx camofox-mcp@1.14.5
+CAMOFOX_TRANSPORT=http npx camofox-mcp@1.15.0
 ```
 
 Optional examples:
 
 ```bash
-CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.14.5
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.14.5
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.14.5
-CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.14.5
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.15.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.15.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.15.0
+CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.15.0
 ```
 
 For browser `CAMOFOX_AUTH_MODE=disabled` on a trusted private agent network,
@@ -131,7 +131,7 @@ Use this skill when the user asks for tasks like:
 - `type_text` — Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; otherwise use selector when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element.
 - `scroll` — Scroll page up or down by pixel amount. Use to reveal content below the fold or navigate long pages.
 - `camofox_scroll_element` — Scroll a specific container element (modal dialog, scrollable div, sidebar). Use when page-level scroll doesn't reach content inside modals or overflow containers. Returns scroll position metadata to track progress.
-- `camofox_evaluate_js` — Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured.
+- `camofox_evaluate_js` — Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY only when browser-server authentication is enabled.
 - `camofox_hover` — Hover over an element to trigger tooltips, dropdown menus, or hover states. Use ref from snapshot or CSS selector.
 - `camofox_wait_for` — Wait for page to be fully ready (DOM loaded, network idle, framework hydration complete). Use after navigation or actions that trigger page changes.
 - `camofox_press_key` — Press a keyboard key. Use after type_text to submit forms (Enter), navigate between elements (Tab), move through suggestions (ArrowDown/ArrowUp), or dismiss dialogs (Escape). Common keys: Enter, Tab, Escape, ArrowDown, ArrowUp, Backspace, Space.
@@ -139,7 +139,7 @@ Use this skill when the user asks for tasks like:
 ### Observation (8)
 
 - `snapshot` — Get accessibility tree snapshot — the PRIMARY way to read page content. Returns element refs, roles, names and values. Token-efficient. Always prefer over screenshot. Element refs are used with click and type_text.
-- `screenshot` — Take visual screenshot in base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.
+- `screenshot` — Take a viewport or full-page visual screenshot in base64 PNG. Set `fullPage: true` for the entire scrollable page. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.
 - `get_links` — Get all hyperlinks on page with URLs and text. Useful for navigation discovery and site mapping.
 - `camofox_get_page_html` — Get rendered HTML from the live DOM. Use when accessibility snapshots miss dynamic or custom component content.
 - `camofox_query_selector` — Query a CSS selector in the live DOM and return element text, HTML, attributes, and visibility metadata.
@@ -162,14 +162,14 @@ Use this skill when the user asks for tasks like:
 
 ### Search (1)
 
-- `web_search` — Search the web via 14 engines: google, youtube, amazon, bing, duckduckgo, reddit, github, stackoverflow, wikipedia, twitter, linkedin, facebook, instagram, tiktok. Call snapshot after to read results.
+- `web_search` — Search via the 14 macros supported by camofox-browser 2.4.7: google, youtube, amazon, reddit, reddit_subreddit, wikipedia, twitter, yelp, spotify, netflix, linkedin, instagram, tiktok, twitch. Call snapshot after to read results.
 
 ### Session (4)
 
 - `import_cookies` — Import cookies for authenticated sessions. Provide cookies in a JSON string array. Restores login sessions without re-auth. Requires userId.
 - `get_stats` — Get session statistics: request counts, active tabs, uptime, performance metrics.
 - `camofox_close_session` — Close all browser tabs for a user session. Use for complete cleanup when done with a browsing session.
-- `toggle_display` — Switch a user session between headless, headed, and virtual display modes and return a VNC URL when available.
+- `toggle_display` — Switch a user session between headless, headed, and virtual display modes and return a VNC URL when available. On Windows x64 with camofox-browser 2.4.7, only `headless: true` is supported.
 
 ### Batch workflows (6)
 

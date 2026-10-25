@@ -143,21 +143,24 @@ export interface TabInfo {
   refsCount: number;
 }
 
-export type SearchEngine =
-  | "google"
-  | "youtube"
-  | "amazon"
-  | "bing"
-  | "duckduckgo"
-  | "reddit"
-  | "github"
-  | "stackoverflow"
-  | "wikipedia"
-  | "twitter"
-  | "linkedin"
-  | "facebook"
-  | "instagram"
-  | "tiktok";
+export const SEARCH_ENGINES = [
+  "google",
+  "youtube",
+  "amazon",
+  "reddit",
+  "reddit_subreddit",
+  "wikipedia",
+  "twitter",
+  "yelp",
+  "spotify",
+  "netflix",
+  "linkedin",
+  "instagram",
+  "tiktok",
+  "twitch"
+] as const;
+
+export type SearchEngine = (typeof SEARCH_ENGINES)[number];
 
 export interface ProfileCookie {
   name: string;

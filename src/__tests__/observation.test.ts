@@ -137,6 +137,23 @@ describe("tools/observation", () => {
     expect(getTrackedTab(tabId).toolCalls).toBe(0);
   });
 
+  it("screenshot forwards fullPage to the browser client", async () => {
+    const tabId = "tab-screenshot-full-page";
+    createdTabIds.push(tabId);
+    trackTab(makeTab(tabId, { userId: "user-1" }));
+    vi.mocked(deps.client.screenshot).mockResolvedValueOnce(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+
+    const { server, getHandler } = makeServerCapture();
+    registerObservationTools(server as unknown as Parameters<typeof registerObservationTools>[0], deps);
+    const handler = getHandler("screenshot");
+
+    const result = await handler({ tabId, fullPage: true });
+
+    expect(result.isError).toBeFalsy();
+    expect(deps.client.screenshot).toHaveBeenCalledWith(tabId, "user-1", true);
+    expect(getTrackedTab(tabId).toolCalls).toBe(1);
+  });
+
   it("camofox_wait_for_selector polls until the selector appears", async () => {
     vi.useFakeTimers();
 

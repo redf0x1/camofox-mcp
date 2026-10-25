@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.15.0] - 2026-08-13
+
+### Added
+- Added `screenshot.fullPage` support, forwarding the documented `fullPage=true` query parameter from the MCP tool through the existing browser screenshot route.
+
+### Fixed
+- Aligned `web_search` with the 14 macros actually supported by `camofox-browser`: Google, YouTube, Amazon, Reddit search/subreddit, Wikipedia, Twitter/X, Yelp, Spotify, Netflix, LinkedIn, Instagram, TikTok, and Twitch. The previously advertised Bing, DuckDuckGo, GitHub, Stack Overflow, and Facebook values never had matching browser macros and now fail MCP input validation instead of reaching the browser as invalid macro requests.
+- Clarified that evaluate/DOM helpers require `CAMOFOX_API_KEY` only when browser-server authentication is enabled.
+
+### Compatibility
+- Recommend `camofox-browser` `2.4.7` or newer, including the official Windows x64 headless portable distribution. Browser lifecycle recovery, `process.execPath`, and session-generation hardening remain browser-internal and require no parallel MCP lifecycle implementation.
+- Documented the Windows x64 display contract: `headless=true` is supported; headed and virtual-display modes remain unsupported on Windows.
+
+### Security
+- Refreshed the runtime lockfile within existing dependency ranges to clear all moderate/high/critical `npm audit --omit=dev --audit-level=moderate` findings. One low-severity transitive `body-parser` advisory remains outside that release gate.
+
 ## [1.14.5] - 2026-06-17
 
 ### Compatibility

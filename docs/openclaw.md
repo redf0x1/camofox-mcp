@@ -7,7 +7,7 @@ CamoFox MCP provides anti-detection browser automation for OpenClaw agents via t
 ## Prerequisites
 
 - Node.js >= 18
-- CamoFox Browser running (default: http://localhost:9377)
+- CamoFox Browser 2.4.7+ running (default: http://localhost:9377)
 - OpenClaw instance
 
 ## Setup
@@ -94,12 +94,12 @@ CamoFox MCP provides 47 browser automation tools:
 
 ### Content
 - `snapshot` — Get accessibility tree (low token cost)
-- `screenshot` — Take screenshot (high token cost)
+- `screenshot` — Take a viewport screenshot or set `fullPage: true` for the entire scrollable page (high token cost)
 - `camofox_wait_for_text` — Wait for text content to appear
 - `get_links` — Get all links on page
 
 ### Search
-- `web_search` — Search across 14 engines (Google, YouTube, Amazon, Reddit, etc.)
+- `web_search` — Use one of the 14 browser-supported search macros (Google, YouTube, Amazon, Reddit/subreddit, Wikipedia, X, Yelp, Spotify, Netflix, LinkedIn, Instagram, TikTok, Twitch)
 
 ### Tab Management
 - `create_tab` — Create new browser tab

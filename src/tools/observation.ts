@@ -175,7 +175,7 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "camofox_get_page_html",
-    "Get rendered HTML from the live DOM. Use when snapshot refs are incomplete on SPA/custom-component sites or when you need the final DOM state rather than the accessibility tree. Optionally pass a CSS selector to return only that element's outerHTML instead of the full page. Requires CAMOFOX_API_KEY.",
+    "Get rendered HTML from the live DOM. Use when snapshot refs are incomplete on SPA/custom-component sites or when you need the final DOM state rather than the accessibility tree. Optionally pass a CSS selector to return only that element's outerHTML instead of the full page. Requires CAMOFOX_API_KEY only when browser-server authentication is enabled.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab"),
       selector: z.string().min(1).optional().describe("Optional CSS selector to scope HTML extraction to a single element")
@@ -210,7 +210,7 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "camofox_query_selector",
-    "Query a CSS selector in the live DOM and return its element details or a specific attribute. Use this for targeted inspection without writing raw evaluate_js. Requires CAMOFOX_API_KEY.",
+    "Query a CSS selector in the live DOM and return its element details or a specific attribute. Use this for targeted inspection without writing raw evaluate_js. Requires CAMOFOX_API_KEY only when browser-server authentication is enabled.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab"),
       selector: z.string().min(1).describe("CSS selector to query"),
@@ -244,15 +244,19 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "screenshot",
-    "Take visual screenshot in base64 PNG. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
+    "Take a viewport or full-page visual screenshot in base64 PNG. Set fullPage to capture the entire scrollable page. Use ONLY for visual verification (CSS, layout, proof). Prefer snapshot for most tasks — much more token-efficient.",
     {
-      tabId: z.string().min(1).describe("Tab ID from create_tab")
+      tabId: z.string().min(1).describe("Tab ID from create_tab"),
+      fullPage: z.boolean().optional().default(false).describe("Capture the entire scrollable page instead of only the current viewport")
     },
     async (input: unknown) => {
       try {
-        const parsed = z.object({ tabId: z.string().min(1).describe("Tab ID from create_tab") }).parse(input);
+        const parsed = z.object({
+          tabId: z.string().min(1).describe("Tab ID from create_tab"),
+          fullPage: z.boolean().optional().default(false).describe("Capture the entire scrollable page instead of only the current viewport")
+        }).parse(input);
         const tracked = getTrackedTab(parsed.tabId);
-        const screenshotBuffer = await deps.client.screenshot(parsed.tabId, tracked.userId);
+        const screenshotBuffer = await deps.client.screenshot(parsed.tabId, tracked.userId, parsed.fullPage);
         incrementToolCall(parsed.tabId);
         return imageResult(screenshotBuffer.toString("base64"));
       } catch (error) {
@@ -323,7 +327,7 @@ export function registerObservationTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "camofox_wait_for_selector",
-    "Wait for a CSS selector to appear in the live DOM. Use for SPA hydration and async content when snapshot refs are incomplete or stale. Once found, prefer snapshot refs for interaction when available. Requires CAMOFOX_API_KEY.",
+    "Wait for a CSS selector to appear in the live DOM. Use for SPA hydration and async content when snapshot refs are incomplete or stale. Once found, prefer snapshot refs for interaction when available. Requires CAMOFOX_API_KEY only when browser-server authentication is enabled.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab"),
       selector: z.string().min(1).describe("CSS selector to wait for"),

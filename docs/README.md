@@ -11,7 +11,7 @@ This documentation set is organized to get a new MCP client working quickly, the
 - [Refs vs Selectors](guides/refs-vs-selectors.md) for choosing between accessibility refs and CSS selectors.
 - SPA and Dynamic Sites *(coming soon)* for hydration waits, async content, and selector-based fallbacks.
 - Session Profiles *(coming soon)* for login reuse, cookie import, and auto-save behavior.
-- Search and Discovery *(coming soon)* for `web_search`, snapshots, and extraction flows.
+- [Search and Discovery](tool-reference/README.md#search--discovery) for the current `web_search` macro contract and examples.
 - Downloads and Resources *(coming soon)* for download tracking, resource extraction, and blob resolution.
 - Geo Presets *(coming soon)* for preset-driven locale, timezone, and geolocation setup.
 - Snapshot Pagination *(coming soon)* for large-page reading with `offset`.

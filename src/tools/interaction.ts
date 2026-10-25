@@ -150,7 +150,7 @@ export function registerInteractionTools(server: McpServer, deps: ToolDeps): voi
 
   server.tool(
     "camofox_evaluate_js",
-    "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY to be configured.",
+    "Execute JavaScript in the browser page context. Runs in isolated scope (invisible to page scripts — safe for anti-detection). Use for: extracting data not visible in accessibility snapshot, checking element properties, reading computed styles, manipulating DOM elements. Requires CAMOFOX_API_KEY only when browser-server authentication is enabled.",
     {
       tabId: z.string().min(1).describe("Tab ID from create_tab"),
       expression: z.string().min(1).describe(

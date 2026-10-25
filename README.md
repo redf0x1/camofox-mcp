@@ -71,7 +71,7 @@ Full client configuration examples live in [docs/getting-started.md](docs/gettin
 
 ## Quick Verify
 
-Use `camofox-browser` `2.4.6` or newer. Browser `2.4.6` pins the Camoufox-compatible Playwright protocol dependency so fresh installs do not crash on first tab launch. Browser `2.4.5` adds explicit browser auth modes including `CAMOFOX_AUTH_MODE=disabled` for trusted private agent networks, and browser `2.4.4` fixes the persistent-context cold-start `about:blank` page reuse path.
+Use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds the supported Windows x64 headless portable distribution and hardens session-scoped navigation recovery without changing the MCP-facing REST request shapes used here. Browser `2.4.6` pins the Camoufox-compatible Playwright protocol dependency for fresh installs, `2.4.5` adds explicit browser auth modes including `CAMOFOX_AUTH_MODE=disabled` for trusted private agent networks, and `2.4.4` fixes the persistent-context cold-start `about:blank` page reuse path.
 
 Verify the browser server is reachable:
 
@@ -104,6 +104,7 @@ On a cold server with no active tabs yet, `browserConnected` can be `false`; cre
 - CamoFox MCP is not a standalone browser. You must run a compatible `camofox-browser` server separately.
 - MCP can share the camofox CLI default browser profile/context when `create_tab` uses `userId: "cli-default"` and `sessionKey: "default"`, but it cannot reliably attach to a tab the CLI already opened. Importing/adopting existing CLI tabs is a future feature.
 - Headed browser window size follows browser viewport/display-size behavior. Pass `viewport`, for example `{ "width": 1366, "height": 768 }`, or set `CAMOFOX_VIEWPORT=1366x768` / `--viewport 1366x768` for a default new-tab size. Supported defaults use width `320..3840` and height `240..2160`.
+- On Windows x64, `camofox-browser` 2.4.7 supports the portable distribution in `headless=true` mode. Headed and virtual-display modes remain unsupported on Windows; `toggle_display` will reject those modes there.
 - Accessibility-tree refs are the primary interaction model, but SPA and custom-component sites can require CSS selectors or rendered HTML tools.
 - If the browser server enforces authentication, API-key-gated operations need the same `CAMOFOX_API_KEY` on both sides.
 - For trusted private-network browser deployments using `CAMOFOX_AUTH_MODE=disabled`, leave `CAMOFOX_API_KEY` unset in CamoFox MCP. MCP then sends no outbound browser auth headers. Keep both browser and MCP access on a trusted private network.

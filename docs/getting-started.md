@@ -6,7 +6,7 @@ Use this guide to install CamoFox MCP, connect it to `camofox-browser`, verify t
 
 - Node.js 18 or newer for `npx` and local development.
 - Docker if you prefer container-based setup.
-- A running `camofox-browser` server. Use `camofox-browser` `2.4.6` or newer so fresh installs pin the Camoufox-compatible Playwright protocol dependency; browser `2.4.5` introduced explicit browser auth modes, and browser `2.4.4` fixed first-tab reuse for persistent contexts.
+- A running `camofox-browser` server. Use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds the supported Windows x64 headless portable distribution and session-scoped navigation recovery; `2.4.6` pins the Camoufox-compatible Playwright protocol dependency, `2.4.5` introduced explicit browser auth modes, and `2.4.4` fixed first-tab reuse for persistent contexts.
 - An MCP-compatible client such as Claude Desktop, VS Code, Cursor, or OpenClaw.
 - `CAMOFOX_API_KEY` only if your browser server is configured to require authentication. Leave it unset when the browser runs with `CAMOFOX_AUTH_MODE=disabled`.
 
@@ -47,6 +47,18 @@ docker run -p 3000:8080 --rm \
 ```
 
 3. Point your HTTP-capable MCP client at `http://localhost:3000/mcp` and send `Authorization: Bearer replace-with-32-plus-random-chars`.
+
+### Windows x64 browser server
+
+`camofox-browser` 2.4.7 provides an official Windows x64 portable ZIP. Extract it to a writable directory, then start the bundled browser server from PowerShell or Command Prompt:
+
+```powershell
+.\camofox.cmd --version
+.\camofox.cmd server start --background
+.\camofox.cmd server status
+```
+
+The browser portable bundle includes its own Node.js runtime and keeps browser state under `data\home` inside the extracted directory. CamoFox MCP still requires Node.js 18 or newer when you run it with `npx`. The verified Windows browser contract is headless mode only; headed and virtual-display modes are not supported there.
 
 ### Local development
 
