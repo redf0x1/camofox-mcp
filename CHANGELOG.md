@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.0] - 2026-10-25
+
+- Add MCP-owned custom URL-template search via `CAMOFOX_SEARCH_URL_TEMPLATE` and `web_search` engine `custom`, retaining existing browser macros and network policy.
+- Validate templates without reflecting credentials/tokens; encode search queries safely.
+- Exercise search forwarding through the MCP/browser HTTP contract and run unit tests in CI.
+- Raise the MCP SDK floor to 1.32.2, update Zod to 4.6.7, and refresh affected transitive patches; production dependency audit reports no known vulnerabilities.
+- Recommend `camofox-browser` 2.4.9 for corrected browser installation and patched dependencies. That server requires Node.js 22+; this HTTP client now requires Node.js 20+ to match the patched SDK dependency tree, while retaining browser 2.4.7+ API compatibility. Upgrade Node before installing on a Node 18 host.
+
 ## [1.15.0] - 2026-08-13
 
 ### Added

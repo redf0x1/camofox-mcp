@@ -92,6 +92,39 @@ describe("tools/search", () => {
     });
   });
 
+  it("forwards custom URL navigation, not a browser macro", async () => {
+    deps.config.searchUrlTemplate = "https://search.example/search?q={query}&language=en";
+    deps.client.navigate = vi.fn().mockResolvedValue({ url: "https://search.example/final" });
+    const { server, getHandler } = makeServerCapture();
+    registerSearchTools(server as unknown as Parameters<typeof registerSearchTools>[0], deps);
+    const result = await getHandler("web_search")({ tabId, query: "雪 & coffee", engine: "custom" });
+    expect(result.isError).toBeFalsy();
+    expect(deps.client.navigate).toHaveBeenCalledWith(tabId, "https://search.example/search?q=%E9%9B%AA%20%26%20coffee&language=en", "user-1");
+    expect(deps.client.navigateMacro).not.toHaveBeenCalled();
+    expect(deps.client.snapshot).toHaveBeenCalledWith(tabId, "user-1");
+    expect(getTrackedTab(tabId)).toMatchObject({ url: "https://search.example/final", refsCount: 2, toolCalls: 1 });
+  });
+
+  it("returns actionable error without custom config or navigation", async () => {
+    deps.client.navigate = vi.fn();
+    const { server, getHandler } = makeServerCapture();
+    registerSearchTools(server as unknown as Parameters<typeof registerSearchTools>[0], deps);
+    const result = await getHandler("web_search")({ tabId, query: "test", engine: "custom" });
+    expect(result.isError).toBe(true);
+    expect(JSON.stringify(result)).toContain("Set CAMOFOX_SEARCH_URL_TEMPLATE");
+    expect(deps.client.navigate).not.toHaveBeenCalled();
+    expect(deps.client.navigateMacro).not.toHaveBeenCalled();
+    expect(deps.client.snapshot).not.toHaveBeenCalled();
+  });
+
+  it("retains Google as the default even with custom configured", async () => {
+    deps.config.searchUrlTemplate = "https://search.example/?q={query}";
+    const { server, getHandler } = makeServerCapture();
+    registerSearchTools(server as unknown as Parameters<typeof registerSearchTools>[0], deps);
+    await getHandler("web_search")({ tabId, query: "test" });
+    expect(deps.client.navigateMacro).toHaveBeenCalledWith(tabId, "@google_search", "test", "user-1");
+  });
+
   it.each(["bing", "duckduckgo", "github", "stackoverflow", "facebook"])(
     "rejects legacy %s because camofox-browser has no matching macro",
     async (engine) => {

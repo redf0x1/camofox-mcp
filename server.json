@@ -7,15 +7,15 @@
     "source": "github"
   },
   "version_detail": {
-    "version": "1.15.0",
-    "release_date": "2026-08-13",
+    "version": "1.16.0",
+    "release_date": "2026-10-25",
     "is_stable": true
   },
   "packages": [
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.15.0",
+      "version": "1.16.0",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -78,6 +78,11 @@
           "default": "~/.camofox-mcp/profiles/"
         },
         {
+          "name": "CAMOFOX_SEARCH_URL_TEMPLATE",
+          "description": "Absolute HTTP(S) custom search URL with exactly one {query} in path or query; existing browser network policy applies",
+          "required": false
+        },
+        {
           "name": "CAMOFOX_VIEWPORT",
           "description": "Default viewport size for new tabs in WIDTHxHEIGHT format (e.g., 1280x720). Width must be 320..3840 and height must be 240..2160.",
           "required": false
@@ -131,7 +136,7 @@
     {"name": "toggle_display", "description": "Switch a user session between headless, headed, and virtual display modes and return a VNC URL when available. On Windows x64 with camofox-browser 2.4.7, only headless=true is supported."},
     {"name": "type_and_submit", "description": "Type text into a field and press a key (default: Enter). Useful for search boxes and single-field forms."},
     {"name": "type_text", "description": "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; use selector as fallback when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element."},
-    {"name": "web_search", "description": "Search via the 14 macros supported by camofox-browser 2.4.7: google, youtube, amazon, reddit, reddit_subreddit, wikipedia, twitter, yelp, spotify, netflix, linkedin, instagram, tiktok, twitch. Call snapshot after to read results."},
+    {"name": "web_search", "description": "Search via the 14 macros supported by camofox-browser 2.4.7: google, youtube, amazon, reddit, reddit_subreddit, wikipedia, twitter, yelp, spotify, netflix, linkedin, instagram, tiktok, twitch. Also supports engine=custom via CAMOFOX_SEARCH_URL_TEMPLATE and ordinary browser navigation/network policy. Returns a snapshot of results."},
     {"name": "youtube_transcript", "description": "Fetch a YouTube transcript without opening a browser tab."}
   ],
   "categories": ["browser-automation", "web-scraping"],

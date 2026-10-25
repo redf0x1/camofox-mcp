@@ -92,7 +92,7 @@ Basic workflow:
 
 Tips:
 - Use \`snapshot\` (not \`screenshot\`) for reading pages — 90% fewer tokens
-- Use \`web_search\` for search engine queries (14 engines supported)
+- Use \`web_search\` for search engine queries (14 browser macros plus configured custom URL-template search supported)
 - Use \`fill_form\` to fill multiple fields at once
 - Use \`import_cookies\` to restore login sessions
 - Each tab gets a unique anti-detection fingerprint automatically`

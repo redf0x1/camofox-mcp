@@ -122,3 +122,24 @@ Start at [docs/README.md](docs/README.md) for the documentation hub, then use [d
 ## Contributing + License
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines, [SECURITY.md](SECURITY.md) for private vulnerability reporting, and [LICENSE](LICENSE) for the MIT license.
+
+## Custom search engines
+
+Set `CAMOFOX_SEARCH_URL_TEMPLATE` in the **MCP server** environment, for example
+`https://search.example/search?q={query}&language=en`, then call
+`web_search({ tabId: "tab_123", query: "café & tea", engine: "custom" })`.
+For SearXNG, use your instance's `/search?q={query}` URL. Restart MCP after changing
+its environment. Google remains the default; the 14 browser macros are unchanged.
+
+The template must be an absolute HTTP(S) URL with exactly one literal `{query}`
+in its path or query, never its host, credentials, or fragment. Credentials in URLs
+are rejected. The query is percent-encoded once, including Unicode and `&`.
+Invalid configuration fails startup without reflecting the URL or its tokens;
+`custom` without configuration returns an actionable error (no fallback).
+
+Custom search uses ordinary browser `navigate`, then `snapshot`, not a new macro
+or a direct MCP HTTP fetch to the search engine. Browser URL validation and existing
+private-network/SSRF policy remain authoritative, including redirects. Self-hosted
+or private SearXNG requires the browser's existing network policy to allow it;
+this setting does not grant access or weaken that policy. Do not store secrets
+in search URLs: navigated URLs can appear in tool output, browser history and logs.

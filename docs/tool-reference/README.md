@@ -118,7 +118,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 
 | Name | Description | Parameters | Returns | Requires API Key | Example |
 | --- | --- | --- | --- | --- | --- |
-| `web_search` | Run a browser-supported search macro and immediately return the resulting page snapshot. | `tabId: string`; `query: string` (subreddit name for `reddit_subreddit`); `engine?: "google" | "youtube" | "amazon" | "reddit" | "reddit_subreddit" | "wikipedia" | "twitter" | "yelp" | "spotify" | "netflix" | "linkedin" | "instagram" | "tiktok" | "twitch"` default `google`. | `url`, `snapshot`. | No | `web_search({ tabId: "tab_123", query: "camoufox", engine: "google" })` |
+| `web_search` | Run a browser-supported search macro or configured custom URL navigation and immediately return the resulting page snapshot. | `tabId: string`; `query: string` (subreddit name for `reddit_subreddit`); `engine?: "google" | "youtube" | "amazon" | "reddit" | "reddit_subreddit" | "wikipedia" | "twitter" | "yelp" | "spotify" | "netflix" | "linkedin" | "instagram" | "tiktok" | "twitch" | "custom"` default `google`. | `url`, `snapshot`. | No | `web_search({ tabId: "tab_123", query: "camoufox", engine: "google" })` |
 
 ## Session Management
 
@@ -212,3 +212,24 @@ To share the CLI default browser profile/context, create the MCP tab with both C
 ```
 
 This creates and tracks a new MCP tab in the shared context. It is not an attach/import-existing-tab feature for tabs that were already opened by the CLI. Use `viewport` to control headed window/display size when the default window is too wide.
+
+## Custom search engines
+
+Set `CAMOFOX_SEARCH_URL_TEMPLATE` in the **MCP server** environment, for example
+`https://search.example/search?q={query}&language=en`, then call
+`web_search({ tabId: "tab_123", query: "café & tea", engine: "custom" })`.
+For SearXNG, use your instance's `/search?q={query}` URL. Restart MCP after changing
+its environment. Google remains the default; the 14 browser macros are unchanged.
+
+The template must be an absolute HTTP(S) URL with exactly one literal `{query}`
+in its path or query, never its host, credentials, or fragment. Credentials in URLs
+are rejected. The query is percent-encoded once, including Unicode and `&`.
+Invalid configuration fails startup without reflecting the URL or its tokens;
+`custom` without configuration returns an actionable error (no fallback).
+
+Custom search uses ordinary browser `navigate`, then `snapshot`, not a new macro
+or a direct MCP HTTP fetch to the search engine. Browser URL validation and existing
+private-network/SSRF policy remain authoritative, including redirects. Self-hosted
+or private SearXNG requires the browser's existing network policy to allow it;
+this setting does not grant access or weaken that policy. Do not store secrets
+in search URLs: navigated URLs can appear in tool output, browser history and logs.
