@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Add opt-in browser network recording tools for starting, stopping, listing, inspecting, and exporting captures as sanitized HAR, requesting eligible response bodies, and configuring opt-in fetch/XHR abort and mock rules.
+
 ## [1.16.0] - 2026-10-25
 
 - Add MCP-owned custom URL-template search via `CAMOFOX_SEARCH_URL_TEMPLATE` and `web_search` engine `custom`, retaining existing browser macros and network policy.

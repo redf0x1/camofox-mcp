@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+import { networkCaptureOptions } from "../network.js";
 import { okResult, toErrorResult } from "../errors.js";
 import { loadProfile, saveProfile, withAutoTimeout } from "../profiles.js";
 import { getTrackedTab, listTrackedTabs, removeTrackedTab, trackTab } from "../state.js";
@@ -59,7 +60,8 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
         .describe('Browser viewport/display size override. Use this to control wide windows, for example { "width": 1366, "height": 768 }.'),
       proxyProfile: z.string().min(1).optional().describe("Named proxy profile configured in camofox-browser"),
       proxy: rawProxySchema.optional(),
-      geoMode: geoModeSchema.optional()
+      geoMode: geoModeSchema.optional(),
+      networkCapture: networkCaptureOptions.optional()
     },
     async (input: unknown) => {
       try {
@@ -89,7 +91,8 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
               .describe('Browser viewport/display size override. Use this to control wide windows, for example { "width": 1366, "height": 768 }.'),
             proxyProfile: z.string().min(1).optional().describe("Named proxy profile configured in camofox-browser"),
             proxy: rawProxySchema.optional(),
-            geoMode: geoModeSchema.optional()
+            geoMode: geoModeSchema.optional(),
+            networkCapture: networkCaptureOptions.optional()
           })
           .parse(input);
 
@@ -106,7 +109,8 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
           viewport: parsed.viewport ?? deps.config.defaultViewport,
           proxyProfile: parsed.proxyProfile,
           proxy: parsed.proxy,
-          geoMode: parsed.geoMode
+          geoMode: parsed.geoMode,
+          ...(parsed.networkCapture ? { networkCapture: parsed.networkCapture } : {})
         });
 
         const tracked: TabInfo = {
@@ -152,7 +156,7 @@ export function registerTabsTools(server: McpServer, deps: ToolDeps): void {
           }
         }
 
-        return okResult({ tabId: tab.tabId, url: tab.url, userId, sessionKey, preset: parsed.preset, autoLoaded });
+        return okResult({ tabId: tab.tabId, url: tab.url, userId, sessionKey, preset: parsed.preset, autoLoaded, ...(tab.networkKey ? { networkKey: tab.networkKey } : {}) });
       } catch (error) {
         return toErrorResult(error);
       }

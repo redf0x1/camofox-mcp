@@ -99,6 +99,18 @@ On a cold server with no active tabs yet, `browserConnected` can be `false`; cre
 | Batch workflows | 6 | [Batch](docs/tool-reference/batch.md) |
 | Presets | 1 | [Presets](docs/tool-reference/presets.md) |
 
+## Network capture
+
+Use `create_tab` with `networkCapture: {}` to record metadata from the initial navigation. For a session-wide capture, set `networkCapture.scope` to `session`, then reuse the returned session key and pass the capture key as `networkCapture.joinKey` when creating additional tabs. To start recording later, create the tab with `networkCapture.start` set to `false` and call `network_capture_start`.
+
+Use `network_list_requests` with `nextCursor` as the next `after` value, and `network_get_response` for one request's metadata. Call `network_capture_stop` before `network_export_har` for a stable export. Keep an enrolled tab open until the export finishes.
+
+If the browser enables body capture, set `networkCapture.captureBodies` to `true` at creation and use `includeBody: true` with `network_get_response`.
+
+Use `network_intercept` to replace exact-match fetch/XHR abort or static mock rules on an active tab capture. The browser operator must configure `CAMOFOX_API_KEY` and enable `CAMOFOX_NETWORK_INTERCEPTION=true`.
+
+The browser server must advertise network capture support. The `networkKey` returned by `create_tab` grants access to that capture and may appear in tool transcripts. Keep it private, and avoid forwarding capture results to untrusted recipients. Exports may contain application-specific URL paths.
+
 ## Top Limitations
 
 - CamoFox MCP is not a standalone browser. You must run a compatible `camofox-browser` server separately.
