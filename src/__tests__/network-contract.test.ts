@@ -21,7 +21,7 @@ async function close(server: Server): Promise<void> {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
 }
 
-it.each(["stdio", "http"])("passes capture keys only in headers across the %s tool contract", async (mode) => {
+it.each(["in-memory", "http"])("validates interception boundaries and keeps capture keys in headers across the %s MCP contract", async (mode) => {
   const requests: Array<{ path: string; key?: string; body?: unknown }> = [];
   let supportsCapture = true;
   const fixture = httpServer(async (req, res) => {
@@ -42,7 +42,7 @@ it.each(["stdio", "http"])("passes capture keys only in headers across the %s to
   }).listen(0, "127.0.0.1");
   const config = loadConfig([], { CAMOFOX_URL: await urlOf(fixture), CAMOFOX_AUTO_SAVE: "false" });
   const client = new Client({ name: "network-contract", version: "1.0.0" });
-  const mcp = mode === "stdio" ? createServer(config).server : undefined;
+  const mcp = mode === "in-memory" ? createServer(config).server : undefined;
   const http = mode === "http" ? createMcpHttpApp(config).listen(0, "127.0.0.1") : undefined;
 
   try {
@@ -79,6 +79,34 @@ it.each(["stdio", "http"])("passes capture keys only in headers across the %s to
     const intercepted = await client.callTool({ name: "network_intercept", arguments: { ...args, rules } });
     expect(intercepted.isError).toBeFalsy();
     expect(requests.at(-1)).toMatchObject({ path: "/network/intercept?userId=user+%26+owner", key, body: { rules } });
+    const fulfill = { action: "fulfill", method: "GET", url: "https://example.test/fixture?q=%23", body: "", status: 200, contentType: "text/plain" };
+    const invalidRules = [
+      ...[199, 204, 205, 300, 301, 399, 600, 200.5].map((status) => ({ ...fulfill, status })),
+      ...["a".repeat(16385), "界".repeat(6000), "界".repeat(5461) + "aa", "😀".repeat(4096) + "a"].map((body) => ({ ...fulfill, body })),
+      ...["abort", "fulfill"].flatMap((action) => [
+        "https://user:password@example.test/", "https://example.test/#fragment", "ftp://example.test/"
+      ].map((url) => action === "abort" ? { action, method: "GET", url } : { ...fulfill, url }))
+    ];
+    for (const rule of invalidRules) {
+      const count = requests.length;
+      const rejected = await client.callTool({ name: "network_intercept", arguments: { ...args, rules: [rule] } });
+      expect.soft(rejected.isError, `reject ${rule.action} status=${"status" in rule ? rule.status : "n/a"} url=${rule.url} bytes=${"body" in rule ? Buffer.byteLength(rule.body) : 0}`).toBe(true);
+      expect.soft(requests.length, "invalid rules must not reach the browser").toBe(count);
+    }
+    const validRules = [
+      ...[200, 203, 206, 299, 400, 599].map((status) => ({ ...fulfill, status })),
+      ...["a".repeat(16384), "界".repeat(5461) + "a", "😀".repeat(4096)].map((body) => ({ ...fulfill, body }))
+    ];
+    for (const rule of validRules) {
+      const count = requests.length;
+      const accepted = await client.callTool({ name: "network_intercept", arguments: { ...args, rules: [rule] } });
+      expect(accepted.isError).toBeFalsy();
+      expect(requests).toHaveLength(count + 1);
+      expect(requests.at(-1)).toMatchObject({ key, body: { rules: [rule] } });
+    }
+    const cleared = await client.callTool({ name: "network_intercept", arguments: { ...args, rules: [] } });
+    expect(cleared.isError).toBeFalsy();
+    expect(requests.at(-1)?.body).toEqual({ rules: [] });
     const stopped = await client.callTool({ name: "network_capture_stop", arguments: args });
     expect(stopped.isError).toBeFalsy();
     const har = await client.callTool({ name: "network_export_har", arguments: args });

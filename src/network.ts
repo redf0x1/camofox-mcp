@@ -54,7 +54,12 @@ export const networkHar = z.object({
 });
 
 const ruleTarget = {
-  url: z.url({ protocol: /^https?$/ }).max(1024),
+  url: z.url({ protocol: /^https?$/ }).max(1024).refine((value) => {
+    if (!URL.canParse(value)) return false;
+    const target = new URL(value);
+    return !target.username && !target.password && !target.hash;
+  }, "Interception URLs must not contain credentials or a fragment")
+    .describe("Exact HTTP(S) target URL, at most 1024 characters, without credentials or a fragment."),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"])
 };
 
@@ -63,8 +68,14 @@ export const networkRule = z.discriminatedUnion("action", [
   z.strictObject({
     ...ruleTarget,
     action: z.literal("fulfill"),
-    body: z.string().max(16 * 1024),
-    status: z.number().int().min(200).max(599),
+    body: z.string().max(16 * 1024)
+      .refine((value) => Buffer.byteLength(value, "utf8") <= 16 * 1024, "Body must not exceed 16384 UTF-8 bytes")
+      .describe("Static response body, at most 16384 UTF-8 bytes (not characters)."),
+    status: z.union([
+      z.number().int().min(200).max(203),
+      z.number().int().min(206).max(299),
+      z.number().int().min(400).max(599)
+    ]).describe("HTTP status: 200..299 except 204/205, or 400..599; redirects are not supported."),
     contentType: z.enum(["application/json", "text/plain"])
   })
 ]);

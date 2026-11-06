@@ -2,12 +2,12 @@
 
 This page is the canonical index for the tools currently registered by `camofox-mcp`.
 
-> Note: older release entries in this repo mention 41 or 46 tools. The current source registers **47 tools across 12 categories**. This index follows the live source in `src/tools/` and `src/server.ts`.
+The current MCP `tools/list` surface exposes **53 tools across 13 categories**. This index follows the registrations in `src/tools/` and `src/server.ts`.
 
 ## Overview
 
-- Total tools: **47**
-- Categories: **12**
+- Total tools: **53**
+- Categories: **13**
 - Primary interaction model: `create_tab` -> `navigate` or `web_search` -> `snapshot` -> interact with refs or CSS selectors
 - Preferred read path: use `snapshot` first, then fall back to CSS-selector and DOM tools when refs are incomplete
 - API key note: tools marked `Yes` call browser-server endpoints that require outbound `CAMOFOX_API_KEY` when the browser server is protected. HTTP transport exposure uses separate inbound `CAMOFOX_HTTP_API_KEY` Bearer authentication.
@@ -64,6 +64,12 @@ This page is the canonical index for the tools currently registered by `camofox-
 | `camofox_scroll_element_and_snapshot` | Batch Operations | Scroll a container and return a new snapshot. |
 | `batch_click` | Batch Operations | Click multiple targets sequentially and report per-click results. |
 | `list_presets` | Presets | List server-supported geo presets. |
+| `network_capture_start` | Network Capture | Start an opted-in capture. |
+| `network_capture_stop` | Network Capture | Stop recording while retaining captured data for export. |
+| `network_list_requests` | Network Capture | Page through sanitized request metadata. |
+| `network_get_response` | Network Capture | Inspect one request, optionally including a captured body. |
+| `network_export_har` | Network Capture | Export sanitized HAR 1.2 JSON. |
+| `network_intercept` | Network Capture | Replace or clear exact-match fetch/XHR abort/static mock rules. |
 
 ## Health & Status
 
@@ -75,7 +81,7 @@ This page is the canonical index for the tools currently registered by `camofox-
 
 | Name | Description | Parameters | Returns | Requires API Key | Example |
 | --- | --- | --- | --- | --- | --- |
-| `create_tab` | Open a new anti-detection tab and start tracking it in MCP state. It can create a tracked MCP tab in the camofox CLI default context when `userId: "cli-default"` and `sessionKey: "default"` are both provided, but it does not reliably attach to an already-open CLI tab. If `viewport` is omitted, `CAMOFOX_VIEWPORT` / `--viewport` can provide a default. | `url?: string (URL)`; `userId?: string`; `sessionKey?: string`; `preset?: string`; `locale?: string`; `timezoneId?: string`; `geolocation?: { latitude: number, longitude: number }`; `viewport?: { width: int 320..3840, height: int 240..2160 }`; `proxyProfile?: string`; `proxy?: { host: string, port: string \| number, username?: string, password?: string }`; `geoMode?: "explicit-wins" \| "proxy-locked"`. | `tabId`, `url`, `userId`, `sessionKey`, `preset`, `autoLoaded`. | No | `create_tab({ url: "http://localhost:8085", userId: "cli-default", sessionKey: "default", viewport: { width: 1366, height: 768 } })` |
+| `create_tab` | Open a new anti-detection tab and start tracking it in MCP state. It can create a tracked MCP tab in the camofox CLI default context when `userId: "cli-default"` and `sessionKey: "default"` are both provided, but it does not reliably attach to an already-open CLI tab. If `viewport` is omitted, `CAMOFOX_VIEWPORT` / `--viewport` can provide a default. | `url?: string (URL)`; `userId?: string`; `sessionKey?: string`; `preset?: string`; `locale?: string`; `timezoneId?: string`; `geolocation?: { latitude: number, longitude: number }`; `viewport?: { width: int 320..3840, height: int 240..2160 }`; `proxyProfile?: string`; `proxy?: { host: string, port: string \| number, username?: string, password?: string }`; `geoMode?: "explicit-wins" \| "proxy-locked"`; `networkCapture?: { scope?: "tab" \| "session", start?: boolean, captureBodies?: boolean, joinKey?: string }` (see [Network Capture](#network-capture)). | `tabId`, `url`, `userId`, `sessionKey`, `preset`, `autoLoaded`, `networkKey?`. | No | `create_tab({ url: "http://localhost:8085", userId: "cli-default", sessionKey: "default", viewport: { width: 1366, height: 768 } })` |
 | `close_tab` | Close a tracked tab and remove it from local state. | `tabId: string`. | `success`, `tabId`, `autoSaved`, `autoSaveFailure?`. | No | `close_tab({ tabId: "tab_123" })` |
 | `list_tabs` | Show all tracked tabs known to MCP. | None. | Array of tracked tab records including `tabId`, `url`, `userId`, timestamps, counters, and session metadata. | No | `list_tabs({})` |
 
@@ -171,6 +177,33 @@ This page is the canonical index for the tools currently registered by `camofox-
 | Name | Description | Parameters | Returns | Requires API Key | Example |
 | --- | --- | --- | --- | --- | --- |
 | `list_presets` | List available geo presets from the browser server. | None. | `count`, `presets[]`, where each preset includes `name`, `locale`, `timezoneId`, and optional `geolocation`. | No | `list_presets({})` |
+
+## Network Capture
+
+Requires a browser advertising `/network/capabilities`; the general browser minimum above does not guarantee this optional feature. Ordinary tabs remain unchanged unless `create_tab` receives `networkCapture`.
+
+Create a tab with `networkCapture: {}` to record the initial navigation, or `{ start: false }` to prepare it for `network_capture_start`. The returned `networkKey` is a private, expiring credential, not a tab ID. Every tool below requires `networkKey: string` and accepts `userId?: string` (defaults to the MCP configured user). MCP forwards the key only in the browser request header, but it can appear in MCP transcripts; do not share it or capture results with untrusted recipients.
+
+For session-wide recording, use `{ scope: "session" }`, then create additional tabs with the same `userId` and returned `sessionKey`, plus `networkCapture: { scope: "session", joinKey: networkKey }`. Joining requires active recording and must not request `captureBodies: true`. Keep at least one enrolled tab open until inspection/export finishes.
+
+| Tool | Additional parameters | Returns / usage |
+| --- | --- | --- |
+| `network_capture_start` | None | Capture `state`; starts a capture prepared with `start: false`. |
+| `network_capture_stop` | None | Capture `state`; stop before export for a stable result. |
+| `network_list_requests` | `after?: nonnegative integer`; `limit?: integer 1..50` | `state`, `dropped`, `requests`, `nextCursor`; pass a non-null cursor as the next `after`. |
+| `network_get_response` | `requestId: positive integer`; `includeBody?: boolean` | Request/response metadata; body only when explicitly requested and available. |
+| `network_export_har` | None | Sanitized HAR 1.2 `log`, with at most 256 entries; application-specific URL paths may remain. |
+| `network_intercept` | `rules: array`, at most 4 | `ruleCount`; replaces all rules, or clears them with `[]`. Active tab captures only, not session-wide captures. |
+
+Body capture additionally requires browser-side body capture support and `networkCapture.captureBodies: true` at creation. `includeBody` defaults to false; requesting it cannot enable capture retroactively. Bodies are bounded to 16 KiB and may be skipped or unavailable.
+
+Interception requires browser `CAMOFOX_API_KEY` and `CAMOFOX_NETWORK_INTERCEPTION=true`. Each rule contains `url` (exact HTTP(S) target, at most 1024 characters, no credentials or fragment), `method` (`GET`, `POST`, `PUT`, `PATCH`, or `DELETE`), and `action` (`abort` or `fulfill`). Targets must be unique by method and normalized URL. Abort rules have no additional fields. Fulfill rules additionally require:
+
+- `body`: static text, at most **16384 UTF-8 bytes**, not JavaScript characters.
+- `status`: integer **200..299 except 204/205**, or **400..599**; redirects are unsupported.
+- `contentType`: `application/json` or `text/plain`.
+
+For example, `network_intercept({ networkKey, rules: [{ url: "https://example.com/api/data", method: "GET", action: "fulfill", body: "{}", status: 200, contentType: "application/json" }] })`. JSON Schema exposes the status ranges and size ceiling; runtime validation also enforces UTF-8 byte length and parsed URL restrictions. Browser authorization and network protections remain authoritative.
 
 ## Practical Patterns
 

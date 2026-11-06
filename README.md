@@ -6,7 +6,7 @@ CamoFox MCP connects MCP clients such as Claude Desktop, VS Code, Cursor, and Op
 
 ## Key Features
 
-- 47 browser automation tools across navigation, interaction, observation, search, downloads, sessions, and batch workflows.
+- 53 browser automation tools across navigation, interaction, observation, search, downloads, sessions, network capture, and batch workflows.
 - Anti-detection browser automation built on top of the CamoFox browser server and Camoufox.
 - Multi-tab workflows with tracked state, history, and cleanup.
 - Session persistence with cookie import, saved profiles, and optional auto-save.
@@ -95,9 +95,10 @@ On a cold server with no active tabs yet, `browserConnected` can be `false`; cre
 | Session | 4 | [Session](docs/tool-reference/session.md) |
 | Profiles | 4 | [Profiles](docs/tool-reference/profiles.md) |
 | Downloads | 3 | [Downloads](docs/tool-reference/downloads.md) |
-| Extraction | 3 | [Extraction](docs/tool-reference/extraction.md) |
+| Extraction | 4 | [Extraction](docs/tool-reference/extraction.md) |
 | Batch workflows | 6 | [Batch](docs/tool-reference/batch.md) |
 | Presets | 1 | [Presets](docs/tool-reference/presets.md) |
+| Network capture | 6 | [Network capture](docs/tool-reference/README.md#network-capture) |
 
 ## Network capture
 
@@ -108,6 +109,8 @@ Use `network_list_requests` with `nextCursor` as the next `after` value, and `ne
 If the browser enables body capture, set `networkCapture.captureBodies` to `true` at creation and use `includeBody: true` with `network_get_response`.
 
 Use `network_intercept` to replace exact-match fetch/XHR abort or static mock rules on an active tab capture. The browser operator must configure `CAMOFOX_API_KEY` and enable `CAMOFOX_NETWORK_INTERCEPTION=true`.
+
+See the [network tool reference](docs/tool-reference/README.md#network-capture) for all six tools, opt-in settings, and interception limits.
 
 The browser server must advertise network capture support. The `networkKey` returned by `create_tab` grants access to that capture and may appear in tool transcripts. Keep it private, and avoid forwarding capture results to untrusted recipients. Exports may contain application-specific URL paths.
 

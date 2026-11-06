@@ -70,7 +70,7 @@ export function registerNetworkTools(server: McpServer, { client, config }: Tool
   );
   server.tool(
     "network_intercept",
-    "Replace exact-match fetch/XHR abort or static mock rules on an active tab capture. Pass an empty list to clear them. Requires browser-side interception to be enabled.",
+    "Replace up to four exact-match HTTP(S) fetch/XHR abort or static mock rules on an active tab capture. No URL credentials or fragments. Mock bodies: at most 16384 UTF-8 bytes; statuses: 200..299 except 204/205, or 400..599. Pass an empty list to clear. Requires browser-side interception to be enabled.",
     { ...owner, rules: z.array(networkRule).max(4) },
     async (input) => {
       try {
