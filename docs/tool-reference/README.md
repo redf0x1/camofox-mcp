@@ -180,6 +180,8 @@ The current MCP `tools/list` surface exposes **53 tools across 13 categories**. 
 
 ## Network Capture
 
+These tools require `camofox-browser` **2.5.0 or newer**; ordinary tools retain the compatibility described above.
+
 Requires a browser advertising `/network/capabilities`; the general browser minimum above does not guarantee this optional feature. Ordinary tabs remain unchanged unless `create_tab` receives `networkCapture`.
 
 Create a tab with `networkCapture: {}` to record the initial navigation, or `{ start: false }` to prepare it for `network_capture_start`. The returned `networkKey` is a private, expiring credential, not a tab ID. Every tool below requires `networkKey: string` and accepts `userId?: string` (defaults to the MCP configured user). MCP forwards the key only in the browser request header, but it can appear in MCP transcripts; do not share it or capture results with untrusted recipients.

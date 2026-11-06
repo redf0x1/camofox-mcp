@@ -1,8 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.17.0] - 2026-11-06
 
 - Add opt-in browser network recording tools for starting, stopping, listing, inspecting, and exporting captures as sanitized HAR, requesting eligible response bodies, and configuring opt-in fetch/XHR abort and mock rules.
+- Require browser 2.5.0+ for network capture while preserving ordinary tools on older compatible servers; align interception status, URL, and UTF-8 byte validation with the browser.
+- Synchronize the published MCP manifest, OpenClaw skill, and documentation with all 53 registered tools.
 
 ## [1.16.0] - 2026-10-25
 

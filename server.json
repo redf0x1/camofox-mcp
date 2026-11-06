@@ -1,21 +1,21 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "camofox-mcp",
-  "description": "Anti-detection browser automation MCP server. 47 tools wrapping CamoFox REST API with stealth fingerprinting that passes bot detection.",
+  "description": "Anti-detection browser automation MCP server. 53 tools wrapping CamoFox REST API, including opt-in network capture, HAR export, and interception.",
   "repository": {
     "url": "https://github.com/redf0x1/camofox-mcp",
     "source": "github"
   },
   "version_detail": {
-    "version": "1.16.0",
-    "release_date": "2026-10-25",
+    "version": "1.17.0",
+    "release_date": "2026-11-06",
     "is_stable": true
   },
   "packages": [
     {
       "registry_name": "npm",
       "name": "camofox-mcp",
-      "version": "1.16.0",
+      "version": "1.17.0",
       "runtime": "node",
       "runtime_arguments": [],
       "package_arguments": [],
@@ -137,7 +137,13 @@
     {"name": "type_and_submit", "description": "Type text into a field and press a key (default: Enter). Useful for search boxes and single-field forms."},
     {"name": "type_text", "description": "Type text into an input field. Provide either a ref (from snapshot) or a CSS selector. Use ref when available; use selector as fallback when snapshot doesn't assign refs (common with combobox/autocomplete inputs). Call snapshot first to find target element."},
     {"name": "web_search", "description": "Search via the 14 macros supported by camofox-browser 2.4.7: google, youtube, amazon, reddit, reddit_subreddit, wikipedia, twitter, yelp, spotify, netflix, linkedin, instagram, tiktok, twitch. Also supports engine=custom via CAMOFOX_SEARCH_URL_TEMPLATE and ordinary browser navigation/network policy. Returns a snapshot of results."},
-    {"name": "youtube_transcript", "description": "Fetch a YouTube transcript without opening a browser tab."}
+    {"name": "youtube_transcript", "description": "Fetch a YouTube transcript without opening a browser tab."},
+    {"name": "network_capture_start", "description": "Start a prepared capture created with networkCapture.start=false. Requires camofox-browser 2.5.0+."},
+    {"name": "network_capture_stop", "description": "Stop recording. Export before the last enrolled tab closes or the capture expires."},
+    {"name": "network_list_requests", "description": "Page through sanitized network request metadata using the private capture key."},
+    {"name": "network_get_response", "description": "Inspect one request; includeBody requires explicitly enabled bounded response body capture."},
+    {"name": "network_export_har", "description": "Export sanitized metadata-only HAR 1.2 JSON."},
+    {"name": "network_intercept", "description": "Replace or clear up to four exact HTTP(S) fetch/XHR abort/static mock rules. No URL credentials or fragments; mock bodies at most 16384 UTF-8 bytes; statuses 200..299 except 204/205, or 400..599. Requires browser-side interception opt-in."}
   ],
   "categories": ["browser-automation", "web-scraping"],
   "tags": ["anti-detection", "stealth", "fingerprint", "camoufox", "playwright-alternative"]

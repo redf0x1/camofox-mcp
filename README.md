@@ -102,6 +102,8 @@ On a cold server with no active tabs yet, `browserConnected` can be `false`; cre
 
 ## Network capture
 
+Network capture requires `camofox-browser` **2.5.0 or newer**. Older compatible browser versions remain usable for ordinary tools without `networkCapture`.
+
 Use `create_tab` with `networkCapture: {}` to record metadata from the initial navigation. For a session-wide capture, set `networkCapture.scope` to `session`, then reuse the returned session key and pass the capture key as `networkCapture.joinKey` when creating additional tabs. To start recording later, create the tab with `networkCapture.start` set to `false` and call `network_capture_start`.
 
 Use `network_list_requests` with `nextCursor` as the next `after` value, and `network_get_response` for one request's metadata. Call `network_capture_stop` before `network_export_har` for a stable export. Keep an enrolled tab open until the export finishes.
