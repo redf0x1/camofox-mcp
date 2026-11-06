@@ -32,6 +32,7 @@ This documentation set is organized to get a new MCP client working quickly, the
 - Extraction *(coming soon)*
 - Batch *(coming soon)*
 - Presets *(coming soon)*
+- [Network Capture](tool-reference/README.md#network-capture) for opt-in recording, response inspection, HAR export, and interception.
 
 ## Recipes
 

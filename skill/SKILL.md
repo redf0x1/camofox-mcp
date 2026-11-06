@@ -1,8 +1,8 @@
 ---
 name: skill
 title: CamoFox MCP for OpenClaw
-version: 1.16.0
-description: Anti-detection browser automation MCP skill for OpenClaw agents with 47 tools for navigation, interaction, observation, extraction, downloads, profiles, sessions, and stealth web search.
+version: 1.17.0
+description: Anti-detection browser automation MCP skill for OpenClaw agents with 53 tools for navigation, interaction, observation, extraction, downloads, profiles, sessions, and stealth web search.
 author: redf0x1
 tags:
   - mcp
@@ -16,7 +16,7 @@ license: MIT
 homepage: https://github.com/redf0x1/camofox-mcp#readme
 metadata:
   title: CamoFox MCP for OpenClaw
-  version: 1.16.0
+  version: 1.17.0
   author: redf0x1
   tags:
     - mcp
@@ -53,16 +53,16 @@ Use `camofox-browser` `2.4.7` or newer. Browser `2.4.7` adds supported Windows x
 ### 2) Start CamoFox MCP in HTTP mode
 
 ```bash
-CAMOFOX_TRANSPORT=http npx camofox-mcp@1.16.0
+CAMOFOX_TRANSPORT=http npx camofox-mcp@1.17.0
 ```
 
 Optional examples:
 
 ```bash
-CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.16.0
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.16.0
-CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.16.0
-CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.16.0
+CAMOFOX_TRANSPORT=http CAMOFOX_API_KEY=browser-server-key npx camofox-mcp@1.17.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_HOST=0.0.0.0 CAMOFOX_HTTP_API_KEY=replace-with-32-plus-random-chars npx camofox-mcp@1.17.0
+CAMOFOX_TRANSPORT=http CAMOFOX_HTTP_PORT=8080 npx camofox-mcp@1.17.0
+CAMOFOX_VIEWPORT=1366x768 npx camofox-mcp@1.17.0
 ```
 
 For browser `CAMOFOX_AUTH_MODE=disabled` on a trusted private agent network,
@@ -106,7 +106,7 @@ Use this skill when the user asks for tasks like:
 - “Run web search in browser and summarize results”
 - “Download files and return metadata/content”
 
-## Tool catalog (47 tools)
+## Tool catalog (53 tools)
 
 ### Health (1)
 
@@ -146,6 +146,19 @@ Use this skill when the user asks for tasks like:
 - `camofox_wait_for_text` — Wait for specific text to appear on the page. Useful for waiting for search results, form submissions, or dynamic content loading.
 - `camofox_wait_for_selector` — Wait for a CSS selector to appear in the live DOM. Useful for SPA and async-content workflows.
 - `youtube_transcript` — Fetch a YouTube transcript without opening a browser tab.
+
+### Network capture (6)
+
+Requires `camofox-browser` **2.5.0+**. Opt in at `create_tab` with `networkCapture: {}` for initial-navigation recording, or `{ start: false }` to prepare a capture. Retain the returned private `networkKey`; never put it in URLs or shared logs. For explicitly enrolled session tabs, reuse the same `userId` and `sessionKey` with `{ scope: "session", joinKey: networkKey }`.
+
+- `network_capture_start` — Start a prepared capture.
+- `network_capture_stop` — Stop recording; export before expiry or the last enrolled tab closes.
+- `network_list_requests` — Read paginated, sanitized request metadata.
+- `network_get_response` — Inspect a request. Bodies require browser-side enablement, explicit creation opt-in, and `includeBody: true`.
+- `network_export_har` — Export sanitized, metadata-only HAR 1.2 JSON.
+- `network_intercept` — Replace or clear up to four exact HTTP(S) fetch/XHR abort/static mock rules. Requires browser-side enablement; mock bodies are capped at 16384 UTF-8 bytes and statuses at 200..299 except 204/205, or 400..599. URL credentials and fragments are not allowed.
+
+See the [canonical network reference](../docs/tool-reference/README.md#network-capture) for parameters, limits, and examples. Ordinary tools remain compatible with the older browser versions described above.
 
 ### Downloads (3)
 
@@ -194,7 +207,7 @@ Use this skill when the user asks for tasks like:
 ## What makes CamoFox unique
 
 - Stealth-first architecture for AI agents that need reliability on hostile sites
-- Rich tool surface (47 tools) combining low-level controls + high-level workflows
+- Rich tool surface (53 tools) combining low-level controls + high-level workflows
 - Snapshot-first design that reduces token burn while preserving actionable context
 - Built-in profile/session controls for long-running authenticated automations
 - Native HTTP MCP endpoint for OpenClaw and remote MCP-compatible clients

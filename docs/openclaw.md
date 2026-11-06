@@ -75,9 +75,17 @@ Use MCPorter to bridge MCP servers to OpenClaw skills format.
 
 Enter `http://localhost:3000/mcp` as a custom MCP server URL in OpenClaw settings.
 
-## Available Tools (47)
+## Available Tools (53)
 
-CamoFox MCP provides 47 browser automation tools:
+CamoFox MCP provides 53 browser automation tools. The [canonical tool reference](tool-reference/README.md) lists the full surface.
+
+### Network capture
+- `network_capture_start` / `network_capture_stop` — Control an opted-in capture
+- `network_list_requests` / `network_get_response` — Inspect captured requests and optional bodies
+- `network_export_har` — Export sanitized HAR
+- `network_intercept` — Replace or clear exact-match abort/static mock rules
+
+See [Network Capture](tool-reference/README.md#network-capture) for setup and limits.
 
 ### Navigation
 - `navigate` — Navigate to URL

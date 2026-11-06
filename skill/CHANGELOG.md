@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.17.0] - 2026-11-06
+
+- Document the six opt-in network tools, private capture keys, body/interception limits, and browser 2.5.0+ requirement.
+- Align package examples and the tool catalog with the 53 registered tools.
+
 ## [1.16.0] - 2026-10-25
 
 - Add MCP-owned custom URL-template search via `CAMOFOX_SEARCH_URL_TEMPLATE` and `web_search` engine `custom`, retaining existing browser macros and network policy.

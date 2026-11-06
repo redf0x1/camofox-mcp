@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { captureState, networkHar, networkKey, networkPage, networkRequest, networkRequestDetail, type networkRule } from "./network.js";
 import { AppError } from "./errors.js";
 import type {
   ClickParams,
@@ -71,7 +72,8 @@ const CreateTabRawResponseSchema = z
       })
       .optional(),
     url: z.string().optional(),
-    title: z.string().optional()
+    title: z.string().optional(),
+    networkKey: networkKey.optional()
   })
   .passthrough();
 
@@ -311,25 +313,100 @@ export class CamofoxClient {
   }
 
   async createTab(params: CreateTabParams): Promise<TabResponse> {
+    const { networkCapture, ...tabParams } = params;
+    if (networkCapture) await this.requireNetworkCapture(networkCapture.captureBodies === true);
+    const { joinKey, ...captureOptions } = networkCapture ?? {};
     const response = await this.requestJson("/tabs", {
       method: "POST",
-      body: JSON.stringify(params)
+      ...(networkCapture ? { redirect: "error" } : {}),
+      ...(joinKey ? { headers: { "x-camofox-network-key": joinKey } } : {}),
+      body: JSON.stringify({
+        ...tabParams,
+        ...(networkCapture ? { networkCapture: { ...captureOptions, ...(joinKey ? { join: true } : {}) } } : {})
+      })
     }, CreateTabRawResponseSchema);
 
-    const tabId =
-      response.tabId ??
-      response.id ??
-      response.tab?.id;
-
+    const tabId = response.tabId ?? response.id ?? response.tab?.id;
     if (!tabId) {
       throw new AppError("INTERNAL_ERROR", "CamoFox did not return a valid tab ID");
+    }
+
+    if (networkCapture && !joinKey && !response.networkKey) {
+      await this.closeTab(tabId, params.userId).catch(() => {});
+      throw new AppError("INTERNAL_ERROR", "Browser did not provide a network capture key");
     }
 
     return {
       tabId,
       url: response.url ?? params.url ?? "about:blank",
-      title: response.title
+      title: response.title,
+      ...(networkCapture && response.networkKey ? { networkKey: response.networkKey } : {})
     };
+  }
+
+  private async requireNetworkCapture(wantBodies: boolean): Promise<void> {
+    try {
+      const capabilities = await this.requestJson("/network/capabilities", { method: "GET", redirect: "error" }, z.object({
+        captureVersion: z.literal(1),
+        bodyCapture: z.boolean().optional()
+      }));
+      if (wantBodies && !capabilities.bodyCapture) {
+        throw new AppError("INTERNAL_ERROR", "This browser server has response body capture disabled.");
+      }
+    } catch (error) {
+      if (error instanceof AppError && error.status === 404) {
+        throw new AppError("INTERNAL_ERROR", "This browser server does not support network capture. Upgrade the browser server.");
+      }
+      throw error;
+    }
+  }
+
+  async setNetworkCaptureState(action: "start" | "stop", userId: string, key: string) {
+    return this.requestNetwork(`/network/capture/${action}`, userId, key, z.object({ state: captureState }), "POST");
+  }
+
+  async listNetworkRequests(userId: string, key: string, after?: number, limit?: number) {
+    const params = new URLSearchParams();
+    if (after !== undefined) params.set("after", String(after));
+    if (limit !== undefined) params.set("limit", String(limit));
+    return this.requestNetwork("/network/requests", userId, key, networkPage, "GET", params);
+  }
+
+  async getNetworkRequest(userId: string, key: string, id: number, includeBody = false) {
+    const params = new URLSearchParams();
+    if (includeBody) params.set("includeBody", "true");
+    return this.requestNetwork(`/network/requests/${id}`, userId, key,
+      includeBody ? networkRequestDetail : networkRequest, "GET", params);
+  }
+
+  async exportNetworkHar(userId: string, key: string) {
+    return this.requestNetwork("/network/har", userId, key, networkHar);
+  }
+
+  async interceptNetwork(userId: string, key: string, rules: z.infer<typeof networkRule>[]) {
+    return this.requestNetwork("/network/intercept", userId, key, z.object({
+      ruleCount: z.number().int().nonnegative()
+    }), "PUT", undefined, { rules });
+  }
+
+  private async requestNetwork<T>(
+    path: string, userId: string, key: string, schema: z.ZodType<T>,
+    method = "GET", params = new URLSearchParams(), body?: unknown
+  ): Promise<T> {
+    params.set("userId", userId);
+    try {
+      return await this.requestJson(`${path}?${params}`, {
+        method,
+        redirect: "error",
+        headers: { "x-camofox-network-key": key },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) })
+      }, schema);
+    } catch (error) {
+      if (error instanceof AppError && error.status === 404) {
+        throw new AppError("INTERNAL_ERROR", "Network capture or request was unavailable. Check the key, owner, and browser version.");
+      }
+      throw error;
+    }
   }
 
   async closeTab(tabId: string, userId: string): Promise<void> {

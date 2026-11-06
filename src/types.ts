@@ -1,3 +1,5 @@
+import type { infer as Infer } from "zod";
+import type { networkCaptureOptions } from "./network.js";
 export interface Config {
   camofoxUrl: string;
   apiKey?: string;
@@ -45,6 +47,7 @@ export interface CreateTabParams {
   proxyProfile?: string;
   proxy?: RawProxyOverride;
   geoMode?: GeoMode;
+  networkCapture?: Infer<typeof networkCaptureOptions>;
 }
 
 export interface PresetInfo {
@@ -61,6 +64,7 @@ export interface TabResponse {
   tabId: string;
   url: string;
   title?: string;
+  networkKey?: string;
 }
 
 export interface NavigateResponse {

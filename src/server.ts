@@ -6,6 +6,7 @@ import type { Config } from "./types.js";
 import { registerBatchTools } from "./tools/batch.js";
 import { registerHealthTools } from "./tools/health.js";
 import { registerInteractionTools, registerPressKeyTool } from "./tools/interaction.js";
+import { registerNetworkTools } from "./tools/network.js";
 import { registerNavigationTools } from "./tools/navigation.js";
 import { registerObservationTools } from "./tools/observation.js";
 import { registerDownloadTools } from "./tools/downloads.js";
@@ -39,6 +40,7 @@ export function createServer(config: Config): { server: McpServer; client: Camof
   registerHealthTools(server, deps);
   registerTabsTools(server, deps);
   registerNavigationTools(server, deps);
+  registerNetworkTools(server, deps);
   registerInteractionTools(server, deps);
   registerPressKeyTool(server, deps);
   registerObservationTools(server, deps);
